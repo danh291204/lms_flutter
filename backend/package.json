@@ -2,6 +2,11 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "postinstall": "prisma generate"
+  },
   "type": "module",
   "dependencies": {
     "@prisma/client": "^5.22.0",

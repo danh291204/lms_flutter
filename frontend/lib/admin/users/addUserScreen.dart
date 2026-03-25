@@ -20,7 +20,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
   String vaiTro = 'hocvien';
   bool get isEdit => widget.user != null;
 
-  final String apiUrl = 'http://192.168.1.11:5000/admin/nguoidung';
+  final String apiUrl = 'http://10.200.28.33:5000/admin/nguoidung';
 
   Future<void> addUser() async {
     final response = await http.post(

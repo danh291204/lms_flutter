@@ -4,61 +4,61 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model baihoc {
   idBaiHoc   Int        @id @default(autoincrement())
   idKhoaHoc  Int
-  tenBaiHoc  String     @db.VarChar(255)
-  videoUrl   String?    @db.VarChar(255)
-  taiLieuUrl String?    @db.VarChar(255)
+  tenBaiHoc  String
+  videoUrl   String?
+  taiLieuUrl String?
   thuTu      Int?
-  khoahoc    khoahoc    @relation(fields: [idKhoaHoc], references: [idKhoaHoc], onDelete: Cascade, map: "fk_baihoc_khoahoc")
+  khoahoc    khoahoc    @relation(fields: [idKhoaHoc], references: [idKhoaHoc], onDelete: Cascade)
   progress   progress[]
 
-  @@index([idKhoaHoc], map: "idKhoaHoc")
+  @@index([idKhoaHoc])
 }
 
 model dangky_khoahoc {
   idDangKy    Int       @id @default(autoincrement())
   idNguoiDung Int
   idKhoaHoc   Int
-  ngayDangKy  DateTime? @default(now()) @db.Timestamp(0)
-  nguoidung   nguoidung @relation(fields: [idNguoiDung], references: [idNguoiDung], onDelete: NoAction, onUpdate: NoAction, map: "dangky_khoahoc_ibfk_1")
-  khoahoc     khoahoc   @relation(fields: [idKhoaHoc], references: [idKhoaHoc], onDelete: NoAction, onUpdate: NoAction, map: "dangky_khoahoc_ibfk_2")
+  ngayDangKy  DateTime? @default(now())
+  khoahoc     khoahoc   @relation(fields: [idKhoaHoc], references: [idKhoaHoc])
+  nguoidung   nguoidung @relation(fields: [idNguoiDung], references: [idNguoiDung])
 
-  @@unique([idNguoiDung, idKhoaHoc], map: "unique_enrollment")
-  @@index([idKhoaHoc], map: "fk_dangky_khoahoc")
-  @@index([idNguoiDung], map: "fk_dangky_nguoidung")
+  @@unique([idNguoiDung, idKhoaHoc])
+  @@index([idKhoaHoc])
+  @@index([idNguoiDung])
 }
 
 model khoahoc {
   idKhoaHoc      Int              @id @default(autoincrement())
-  tenKhoaHoc     String           @db.VarChar(255)
-  code           String           @db.VarChar(6)
-  moTa           String?          @db.Text
-  danhMuc        String?          @db.VarChar(100)
+  tenKhoaHoc     String
+  code           String
+  moTa           String?
+  danhMuc        String?
   trangThai      Boolean
   idGiangVien    Int?
-  ngayTao        DateTime?        @default(now()) @db.DateTime(0)
+  ngayTao        DateTime?        @default(now())
   baihoc         baihoc[]
   dangky_khoahoc dangky_khoahoc[]
-  nguoidung      nguoidung?       @relation(fields: [idGiangVien], references: [idNguoiDung], map: "Khoahoc_Giangvien")
+  nguoidung      nguoidung?       @relation(fields: [idGiangVien], references: [idNguoiDung])
   progress       progress[]
   quizzes        quizzes[]
 
-  @@index([idGiangVien], map: "idGiangVien")
+  @@index([idGiangVien])
 }
 
 model nguoidung {
   idNguoiDung    Int               @id @default(autoincrement())
-  hoTen          String            @db.VarChar(255)
-  taiKhoan       String            @unique(map: "taiKhoan") @db.VarChar(255)
-  matKhau        String            @db.VarChar(255)
+  hoTen          String
+  taiKhoan       String            @unique
+  matKhau        String
   trangThai      Boolean
-  email          String            @db.VarChar(255)
+  email          String
   vaiTro         nguoidung_vaiTro? @default(hocvien)
   dangky_khoahoc dangky_khoahoc[]
   khoahoc        khoahoc[]
@@ -73,60 +73,60 @@ model progress {
   idBaiHoc    Int
   trangThai   progress_trangThai? @default(chua_hoc)
   thoiGianHoc Int?                @default(0)
-  baihoc      baihoc              @relation(fields: [idBaiHoc], references: [idBaiHoc], onDelete: Cascade, map: "fk_pro_baihoc")
-  khoahoc     khoahoc             @relation(fields: [idKhoaHoc], references: [idKhoaHoc], onDelete: Cascade, map: "fk_pro_khoahoc")
-  nguoidung   nguoidung           @relation(fields: [idNguoiDung], references: [idNguoiDung], onDelete: Cascade, map: "fk_pro_nguoidung")
+  baihoc      baihoc              @relation(fields: [idBaiHoc], references: [idBaiHoc], onDelete: Cascade)
+  khoahoc     khoahoc             @relation(fields: [idKhoaHoc], references: [idKhoaHoc], onDelete: Cascade)
+  nguoidung   nguoidung           @relation(fields: [idNguoiDung], references: [idNguoiDung], onDelete: Cascade)
 
-  @@index([idBaiHoc], map: "idBaiHoc")
-  @@index([idKhoaHoc], map: "idKhoaHoc")
-  @@index([idNguoiDung], map: "idNguoiDung")
+  @@index([idBaiHoc])
+  @@index([idKhoaHoc])
+  @@index([idNguoiDung])
 }
 
 model quiz_questions {
   idCauHoi   Int      @id @default(autoincrement())
   idQuiz     Int
-  cauHoi     String   @db.Text
-  dapAnDung  String?  @db.VarChar(255)
-  diemCauHoi Decimal? @default(1.00) @db.Decimal(5, 2)
-  quizzes    quizzes  @relation(fields: [idQuiz], references: [idQuiz], onDelete: Cascade, map: "fk_qques_quiz")
+  cauHoi     String
+  dapAnDung  String?
+  diemCauHoi Decimal? @default(1.00)
+  quizzes    quizzes  @relation(fields: [idQuiz], references: [idQuiz], onDelete: Cascade)
 
-  @@index([idQuiz], map: "idQuiz")
+  @@index([idQuiz])
 }
 
 model quiz_results {
   idKetQua       Int       @id @default(autoincrement())
   idNguoiDung    Int
   idQuiz         Int?
-  diemSo         Decimal?  @db.Decimal(5, 2)
+  diemSo         Decimal?
   thoiGianLamBai Int?
-  ngayLamBai     DateTime? @default(now()) @db.DateTime(0)
-  nguoidung      nguoidung @relation(fields: [idNguoiDung], references: [idNguoiDung], onDelete: Cascade, map: "fk_qres_nguoidung")
-  quizzes        quizzes?  @relation(fields: [idQuiz], references: [idQuiz], map: "fk_qres_quiz")
+  ngayLamBai     DateTime? @default(now())
+  nguoidung      nguoidung @relation(fields: [idNguoiDung], references: [idNguoiDung], onDelete: Cascade)
+  quizzes        quizzes?  @relation(fields: [idQuiz], references: [idQuiz])
 
-  @@index([idNguoiDung], map: "idNguoiDung")
-  @@index([idQuiz], map: "idQuiz")
+  @@index([idNguoiDung])
+  @@index([idQuiz])
 }
 
 model quizzes {
   idQuiz         Int              @id @default(autoincrement())
   idKhoaHoc      Int
-  tenQuiz        String           @db.VarChar(255)
+  tenQuiz        String
   thoiGianLamBai Int?
   quiz_questions quiz_questions[]
   quiz_results   quiz_results[]
-  khoahoc        khoahoc          @relation(fields: [idKhoaHoc], references: [idKhoaHoc], onDelete: Cascade, map: "fk_quiz_khoahoc")
+  khoahoc        khoahoc          @relation(fields: [idKhoaHoc], references: [idKhoaHoc], onDelete: Cascade)
 
-  @@index([idKhoaHoc], map: "idKhoaHoc")
-}
-
-enum progress_trangThai {
-  chua_hoc
-  dang_hoc
-  hoan_thanh
+  @@index([idKhoaHoc])
 }
 
 enum nguoidung_vaiTro {
   hocvien
   giangvien
   admin
+}
+
+enum progress_trangThai {
+  chua_hoc
+  dang_hoc
+  hoan_thanh
 }

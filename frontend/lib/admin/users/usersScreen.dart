@@ -14,7 +14,7 @@ class _UsersScreenState extends State<UsersScreen> {
   List users = [];
   bool isLoading = true;
 
-  final String apiUrl = 'http://192.168.1.11:5000/admin/nguoidung';
+  final String apiUrl = 'http://10.200.28.33:5000/admin/nguoidung';
   
 
   @override

@@ -12,5 +12,5 @@ app.use(express.json())
 app.use('/admin/nguoidung', nguoiDungRoutes)
 
 app.listen(PORT, () => {
-  console.log('Server chạy ở ${PORT}')
+  console.log('Server chạy ở' + PORT)
 })

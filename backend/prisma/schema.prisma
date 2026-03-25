@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model baihoc {
+  idBaiHoc   Int        @id @default(autoincrement())
+  idKhoaHoc  Int
+  tenBaiHoc  String     @db.VarChar(255)
+  videoUrl   String?    @db.VarChar(255)
+  taiLieuUrl String?    @db.VarChar(255)
+  thuTu      Int?
+  khoahoc    khoahoc    @relation(fields: [idKhoaHoc], references: [idKhoaHoc], onDelete: Cascade, map: "fk_baihoc_khoahoc")
+  progress   progress[]
+
+  @@index([idKhoaHoc], map: "idKhoaHoc")
+}
+
+model dangky_khoahoc {
+  idDangKy    Int       @id @default(autoincrement())
+  idNguoiDung Int
+  idKhoaHoc   Int
+  ngayDangKy  DateTime? @default(now()) @db.Timestamp(0)
+  nguoidung   nguoidung @relation(fields: [idNguoiDung], references: [idNguoiDung], onDelete: NoAction, onUpdate: NoAction, map: "dangky_khoahoc_ibfk_1")
+  khoahoc     khoahoc   @relation(fields: [idKhoaHoc], references: [idKhoaHoc], onDelete: NoAction, onUpdate: NoAction, map: "dangky_khoahoc_ibfk_2")
+
+  @@unique([idNguoiDung, idKhoaHoc], map: "unique_enrollment")
+  @@index([idKhoaHoc], map: "fk_dangky_khoahoc")
+  @@index([idNguoiDung], map: "fk_dangky_nguoidung")
+}
+
+model khoahoc {
+  idKhoaHoc      Int              @id @default(autoincrement())
+  tenKhoaHoc     String           @db.VarChar(255)
+  code           String           @db.VarChar(6)
+  moTa           String?          @db.Text
+  danhMuc        String?          @db.VarChar(100)
+  trangThai      Boolean
+  idGiangVien    Int?
+  ngayTao        DateTime?        @default(now()) @db.DateTime(0)
+  baihoc         baihoc[]
+  dangky_khoahoc dangky_khoahoc[]
+  nguoidung      nguoidung?       @relation(fields: [idGiangVien], references: [idNguoiDung], map: "Khoahoc_Giangvien")
+  progress       progress[]
+  quizzes        quizzes[]
+
+  @@index([idGiangVien], map: "idGiangVien")
+}
+
+model nguoidung {
+  idNguoiDung    Int               @id @default(autoincrement())
+  hoTen          String            @db.VarChar(255)
+  taiKhoan       String            @unique(map: "taiKhoan") @db.VarChar(255)
+  matKhau        String            @db.VarChar(255)
+  trangThai      Boolean
+  email          String            @db.VarChar(255)
+  vaiTro         nguoidung_vaiTro? @default(hocvien)
+  dangky_khoahoc dangky_khoahoc[]
+  khoahoc        khoahoc[]
+  progress       progress[]
+  quiz_results   quiz_results[]
+}
+
+model progress {
+  idProgress  Int                 @id @default(autoincrement())
+  idNguoiDung Int
+  idKhoaHoc   Int
+  idBaiHoc    Int
+  trangThai   progress_trangThai? @default(chua_hoc)
+  thoiGianHoc Int?                @default(0)
+  baihoc      baihoc              @relation(fields: [idBaiHoc], references: [idBaiHoc], onDelete: Cascade, map: "fk_pro_baihoc")
+  khoahoc     khoahoc             @relation(fields: [idKhoaHoc], references: [idKhoaHoc], onDelete: Cascade, map: "fk_pro_khoahoc")
+  nguoidung   nguoidung           @relation(fields: [idNguoiDung], references: [idNguoiDung], onDelete: Cascade, map: "fk_pro_nguoidung")
+
+  @@index([idBaiHoc], map: "idBaiHoc")
+  @@index([idKhoaHoc], map: "idKhoaHoc")
+  @@index([idNguoiDung], map: "idNguoiDung")
+}
+
+model quiz_questions {
+  idCauHoi   Int      @id @default(autoincrement())
+  idQuiz     Int
+  cauHoi     String   @db.Text
+  dapAnDung  String?  @db.VarChar(255)
+  diemCauHoi Decimal? @default(1.00) @db.Decimal(5, 2)
+  quizzes    quizzes  @relation(fields: [idQuiz], references: [idQuiz], onDelete: Cascade, map: "fk_qques_quiz")
+
+  @@index([idQuiz], map: "idQuiz")
+}
+
+model quiz_results {
+  idKetQua       Int       @id @default(autoincrement())
+  idNguoiDung    Int
+  idQuiz         Int?
+  diemSo         Decimal?  @db.Decimal(5, 2)
+  thoiGianLamBai Int?
+  ngayLamBai     DateTime? @default(now()) @db.DateTime(0)
+  nguoidung      nguoidung @relation(fields: [idNguoiDung], references: [idNguoiDung], onDelete: Cascade, map: "fk_qres_nguoidung")
+  quizzes        quizzes?  @relation(fields: [idQuiz], references: [idQuiz], map: "fk_qres_quiz")
+
+  @@index([idNguoiDung], map: "idNguoiDung")
+  @@index([idQuiz], map: "idQuiz")
+}
+
+model quizzes {
+  idQuiz         Int              @id @default(autoincrement())
+  idKhoaHoc      Int
+  tenQuiz        String           @db.VarChar(255)
+  thoiGianLamBai Int?
+  quiz_questions quiz_questions[]
+  quiz_results   quiz_results[]
+  khoahoc        khoahoc          @relation(fields: [idKhoaHoc], references: [idKhoaHoc], onDelete: Cascade, map: "fk_quiz_khoahoc")
+
+  @@index([idKhoaHoc], map: "idKhoaHoc")
+}
+
+enum progress_trangThai {
+  chua_hoc
+  dang_hoc
+  hoan_thanh
+}
+
+enum nguoidung_vaiTro {
+  hocvien
+  giangvien
+  admin
+}

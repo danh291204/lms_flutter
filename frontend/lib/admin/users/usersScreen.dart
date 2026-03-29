@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'addUserScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -14,8 +15,7 @@ class _UsersScreenState extends State<UsersScreen> {
   List users = [];
   bool isLoading = true;
 
-  final String apiUrl = 'http://10.200.28.33:5000/admin/nguoidung';
-  
+  final String apiUrl = 'https://lms-flutter.onrender.com/admin/nguoidung';
 
   @override
   void initState() {
@@ -23,10 +23,17 @@ class _UsersScreenState extends State<UsersScreen> {
     fetchUsers();
   }
 
-  //Lay ds user - get
   Future<void> fetchUsers() async {
     try {
-      final response = await http.get(Uri.parse(apiUrl));
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt("userId");
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": userId != null ? userId.toString() : "",
+        },
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -55,31 +62,37 @@ class _UsersScreenState extends State<UsersScreen> {
       fetchUsers();
     }
   }
-  
+
   Future<void> xoaUser(int id) async {
-    try{
-      final response = await http.delete(Uri.parse('$apiUrl/$id'));
-      if(response.statusCode == 200){
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt("userId");
+      final response = await http.delete(
+        Uri.parse('$apiUrl/$id'),
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": userId != null ? userId.toString() : "",
+        },
+      );
+      if (response.statusCode == 200) {
         fetchUsers();
-      }
-      else{
+      } else {
         throw Exception("Xóa thất bại");
       }
-    }
-    catch(e){
+    } catch (e) {
       print(e);
     }
   }
 
-  Future<void> openUpdateUser(Map<String,dynamic>user) async{
+  Future<void> openUpdateUser(Map<String, dynamic> user) async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_)=> AddUserScreen(user: user))
+      MaterialPageRoute(builder: (_) => AddUserScreen(user: user)),
     );
-    if(result ==true){
+    if (result == true) {
       fetchUsers();
     }
-  } 
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -33,7 +33,12 @@ router.post("/login", async (req, res) => {
                 message: "Mật khẩu không chính xác"
             })
         }
-
+        if (!nguoiDung.trangThai) {
+            return res.status(403).json({
+                success: false,
+                message: "Tài khoản đã bị khóa"
+            })
+        }
         let duongDan = "/"
         switch (nguoiDung.vaiTro) {
             case "admin":
@@ -106,6 +111,7 @@ router.post("/dangky", async (req, res) => {
                 taiKhoan,
                 matKhau,
                 email,
+                trangThai: true,
                 vaiTro: ["giangvien", "hocvien"].includes(vaiTro)
                     ? vaiTro
                     : "hocvien"

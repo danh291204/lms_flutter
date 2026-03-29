@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/admin/users/usersScreen.dart';
+import 'package:frontend/authentication/loginScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,7 +16,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'LMS Home Page'),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const MyHomePage(title: 'LMS Home Page'),
+        '/admin': (context) => UsersScreen(),
+      },
     );
   }
 }
@@ -36,6 +41,13 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void goToLoginScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => Loginscreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,12 +60,11 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text('Trang chủ'),
-
             ElevatedButton(
               onPressed: () {
-                goToUsersScreen(context);
+                goToLoginScreen(context);
               },
-              child: const Text('Đi tới Users'),
+              child: const Text('Đi tới Đăng nhập'),
             ),
           ],
         ),

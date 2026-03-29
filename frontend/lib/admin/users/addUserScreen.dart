@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddUserScreen extends StatefulWidget {
   const AddUserScreen({super.key, this.user});
@@ -20,12 +21,17 @@ class _AddUserScreenState extends State<AddUserScreen> {
   String vaiTro = 'hocvien';
   bool get isEdit => widget.user != null;
 
-  final String apiUrl = 'http://10.200.28.33:5000/admin/nguoidung';
+  final String apiUrl = 'https://lms-flutter.onrender.com/admin/nguoidung';
 
   Future<void> addUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt("userId");
     final response = await http.post(
       Uri.parse(apiUrl),
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId != null ? userId.toString() : ""
+      },
       body: json.encode({
         'hoTen': hoTenController.text,
         'taiKhoan': taiKhoanController.text,
@@ -35,20 +41,26 @@ class _AddUserScreenState extends State<AddUserScreen> {
         'vaiTro': vaiTro,
       }),
     );
+    final data = jsonDecode(response.body);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Thêm user thất bại')));
+      ).showSnackBar(SnackBar(content: Text(data["message"] ?? "Thêm user thất bại")));
     }
   }
 
   Future<void> updateUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt("userId");
     final respone = await http.put(
       Uri.parse('$apiUrl/${widget.user!['idNguoiDung']}'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId != null ? userId.toString() : ""
+      },
       body: json.encode({
         'hoTen': hoTenController.text,
         'taiKhoan': taiKhoanController.text,
@@ -58,12 +70,13 @@ class _AddUserScreenState extends State<AddUserScreen> {
         'matKhau': matKhauController.text,
       }),
     );
+    final data = jsonDecode(respone.body);
     if (respone.statusCode == 200) {
       Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Cập nhật thất bại')));
+      ).showSnackBar(SnackBar(content: Text(data["message"] ?? "Cập nhật thất bại")));
     }
   }
 

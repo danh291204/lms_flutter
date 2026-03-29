@@ -1,5 +1,6 @@
 import express from 'express'
 import nguoiDungRoutes from './routes/admin/nguoidung.js'
+import authRoutes from './routes/auth.js'
 import cors from 'cors'
 
 const app = express()
@@ -10,6 +11,7 @@ app.use(cors())
 app.use(express.json())
 
 app.use('/admin/nguoidung', nguoiDungRoutes)
+app.use('/auth', authRoutes)
 
 app.listen(PORT, () => {
   console.log('Server chạy ở' + PORT)

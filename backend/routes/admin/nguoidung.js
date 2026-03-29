@@ -1,10 +1,10 @@
 import express from 'express'
 import { prisma } from '../../prisma/client.js'
+import { checkAdmin } from '../middleware.js'
 
 const router = express.Router()
 
-
-router.get('/', async (req, res) => {
+router.get('/', checkAdmin, async (req, res) => {
   try {
     const users = await prisma.nguoidung.findMany()
     res.json(users)
@@ -13,10 +13,7 @@ router.get('/', async (req, res) => {
   }
 })
 
-// ======================
-// GET user by id
-// ======================
-router.get('/:id', async (req, res) => {
+router.get('/:id', checkAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id)
 
@@ -34,12 +31,38 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-// ======================
-// CREATE user
-// ======================
-router.post('/', async (req, res) => {
+router.post('/', checkAdmin, async (req, res) => {
   try {
-    const { hoTen, taiKhoan, matKhau, email, vaiTro } = req.body
+    let { hoTen, taiKhoan, matKhau, email, vaiTro } = req.body
+    hoTen = hoTen ? hoTen.trim() : undefined
+    taiKhoan = taiKhoan ? taiKhoan.trim() : undefined
+    matKhau = matKhau ? matKhau.trim() : undefined
+    email = email ? email.trim() : undefined
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    if (!hoTen || !taiKhoan || !matKhau || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Vui lòng điền đầy đủ thông tin"
+      })
+    }
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Email không hợp lệ"
+      })
+    }
+
+    const existing = await prisma.nguoidung.findUnique({
+      where: { taiKhoan }
+    })
+
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: "Tài khoản đã tồn tại"
+      })
+    }
 
     const newUser = await prisma.nguoidung.create({
       data: {
@@ -58,13 +81,27 @@ router.post('/', async (req, res) => {
   }
 })
 
-// ======================
-// UPDATE user
-// ======================
-router.put('/:id', async (req, res) => {
+router.put('/:id', checkAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id)
-    const { hoTen, email, trangThai, vaiTro, matKhau } = req.body
+    let { hoTen, email, trangThai, vaiTro, matKhau } = req.body
+    hoTen = hoTen ? hoTen.trim() : undefined
+    matKhau = matKhau ? matKhau.trim() : undefined
+    email = email ? email.trim() : undefined
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    if (!hoTen || !matKhau || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Vui lòng điền đầy đủ thông tin"
+      })
+    }
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Email không hợp lệ"
+      })
+    }
 
     const updatedUser = await prisma.nguoidung.update({
       where: { idNguoiDung: id },
@@ -83,10 +120,7 @@ router.put('/:id', async (req, res) => {
   }
 })
 
-// ======================
-// DELETE user
-// ======================
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', checkAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id)
 

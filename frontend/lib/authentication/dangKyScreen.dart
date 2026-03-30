@@ -33,7 +33,7 @@ class _DangkyscreenState extends State<Dangkyscreen> {
         }),
       );
       final data = jsonDecode(response.body);
-      if(response.statusCode == 200 && data["success"]){
+      if((response.statusCode == 200 || response.statusCode == 201) && data["success"]){
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.")),
         );

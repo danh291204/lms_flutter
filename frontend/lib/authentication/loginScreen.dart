@@ -43,6 +43,7 @@ class _LoginscreenState extends State<Loginscreen> {
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt("userId", user["id"]);
+        await prefs.setString("hoTen", user["hoTen"]);
         await prefs.setString("vaiTro", user["vaiTro"]);
 
         ScaffoldMessenger.of(context).showSnackBar(

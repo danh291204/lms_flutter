@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/admin/users/usersScreen.dart';
 import 'package:frontend/authentication/loginScreen.dart';
+import 'package:frontend/admin/menuUI/adminMenuBar.dart';
+import 'package:frontend/admin/classroom/classScreen.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -20,6 +23,9 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const MyHomePage(title: 'LMS Home Page'),
         '/admin': (context) => UsersScreen(),
+        '/users': (context) => UsersScreen(),
+        '/classroom': (context) => ClassScreen(),
+        '/login': (context) => Loginscreen(),
       },
     );
   }

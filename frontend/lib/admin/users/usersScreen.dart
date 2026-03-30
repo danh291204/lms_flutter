@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'addUserScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:frontend/admin/menuUI/adminMenuBar.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -16,11 +17,22 @@ class _UsersScreenState extends State<UsersScreen> {
   bool isLoading = true;
 
   final String apiUrl = 'https://lms-flutter.onrender.com/admin/nguoidung';
+  String hoTen = "";
+  String vaiTro = "";
 
   @override
   void initState() {
     super.initState();
+    loadUserInfo();
     fetchUsers();
+  }
+
+  Future<void> loadUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      hoTen = prefs.getString("hoTen") ?? "";
+      vaiTro = prefs.getString("vaiTro") ?? "";
+    });
   }
 
   Future<void> fetchUsers() async {
@@ -98,7 +110,7 @@ class _UsersScreenState extends State<UsersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Danh sách User')),
-
+      drawer: AdminMenuBar(hoTen: hoTen, vaiTro: vaiTro),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(

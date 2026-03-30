@@ -13,6 +13,26 @@ router.get('/', checkAdmin, async (req, res) => {
   }
 })
 
+router.get('/search', checkAdmin, async (req, res) => {
+  try {
+    const { taiKhoan } = req.query
+
+    const users = await prisma.nguoidung.findMany({
+      where: taiKhoan
+        ? {
+            taiKhoan: {
+              contains: taiKhoan,
+            },
+          }
+        : {},
+    })
+
+    res.json(users)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 router.get('/:id', checkAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id)
@@ -30,6 +50,7 @@ router.get('/:id', checkAdmin, async (req, res) => {
     res.status(500).json({ error: err.message })
   }
 })
+
 
 router.post('/', checkAdmin, async (req, res) => {
   try {

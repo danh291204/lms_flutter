@@ -1,4 +1,5 @@
 import express from 'express'
+import test from './test.js'
 import nguoiDungRoutes from './routes/admin/nguoidung.js'
 import authRoutes from './routes/auth.js'
 import lopHocAdminRoutes from './routes/admin/lophoc.js'
@@ -16,6 +17,7 @@ app.use('/admin/nguoidung', nguoiDungRoutes)
 app.use('/admin/lophoc', lopHocAdminRoutes)
 app.use('/auth', authRoutes)
 app.use('/hocvien/lophoc', lopHocHocVienRoutes)
+app.use('/', test)
 
 app.listen(PORT, () => {
   console.log('Server chạy ở' + PORT)

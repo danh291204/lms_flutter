@@ -286,6 +286,10 @@ class _UsersScreenState extends State<UsersScreen> {
                 ),
               ],
             ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: openAddUserScreen,
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

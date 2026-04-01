@@ -215,7 +215,7 @@ class _HocVienScreenState extends State<HocVienScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red, // 🔥 nút nguy hiểm
+                backgroundColor: Colors.red,
               ),
               onPressed: () async {
                 Navigator.pop(context); // đóng dialog

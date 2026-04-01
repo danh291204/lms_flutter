@@ -72,7 +72,6 @@ class _AddClassScreenState extends State<AddClassScreen> {
     );
 
     final data = jsonDecode(response.body);
-
     if (response.statusCode == 200 || response.statusCode == 201) {
       Navigator.pop(context, true);
     } else {
@@ -91,7 +90,6 @@ class _AddClassScreenState extends State<AddClassScreen> {
 
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt("userId");
-
     final response = await http.put(
       Uri.parse('$apiUrl/${widget.khoahoc!['idKhoaHoc']}'),
       headers: {
@@ -108,7 +106,6 @@ class _AddClassScreenState extends State<AddClassScreen> {
     );
 
     final data = jsonDecode(response.body);
-
     if (response.statusCode == 200) {
       Navigator.pop(context, true);
     } else {
@@ -125,9 +122,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
       tenController.text = widget.khoahoc!['tenKhoaHoc'] ?? '';
       moTaController.text = widget.khoahoc!['moTa'] ?? '';
       danhMucController.text = widget.khoahoc!['danhMuc'] ?? '';
-
       selectedGiangVienId = widget.khoahoc!['idGiangVien'];
-
       trangThai = widget.khoahoc!['trangThai'] ?? true;
     }
   }
@@ -155,8 +150,6 @@ class _AddClassScreenState extends State<AddClassScreen> {
             ),
 
             const SizedBox(height: 10),
-
-            // 🔥 DROPDOWN GIẢNG VIÊN
             DropdownButtonFormField<int>(
               value: selectedGiangVienId,
               items: giangViens.map<DropdownMenuItem<int>>((gv) {

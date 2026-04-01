@@ -13,6 +13,7 @@ class UsersScreen extends StatefulWidget {
 }
 
 class _UsersScreenState extends State<UsersScreen> {
+  final TextEditingController _searchController = TextEditingController();
   List users = [];
   bool isLoading = true;
 
@@ -46,10 +47,8 @@ class _UsersScreenState extends State<UsersScreen> {
           "x-user-id": userId != null ? userId.toString() : "",
         },
       );
-
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-
         setState(() {
           users = data;
           isLoading = false;
@@ -62,6 +61,27 @@ class _UsersScreenState extends State<UsersScreen> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> timKiemUsers(String keyword) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt("userId");
+      final response = await http.get(
+        Uri.parse('$apiUrl/search?taiKhoan=$keyword'),
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": userId != null ? userId.toString() : "",
+        },
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          users = json.decode(response.body);
+        });
+      }
+    } catch (e) {
+      print(e);
     }
   }
 
@@ -113,119 +133,159 @@ class _UsersScreenState extends State<UsersScreen> {
       drawer: AdminMenuBar(hoTen: hoTen, vaiTro: vaiTro),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: users.length,
-              itemBuilder: (context, index) {
-                final user = users[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Tìm theo tài khoản...',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                fetchUsers();
+                              },
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      if (value.isEmpty) {
+                        fetchUsers();
+                      } else {
+                        timKiemUsers(value);
+                      }
+                    },
                   ),
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 25,
-                          backgroundColor: Colors.blue,
-                          child: Text(
-                            user['hoTen'] != null && user['hoTen'].isNotEmpty
-                                ? user['hoTen'][0].toUpperCase()
-                                : '?',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                            ),
-                          ),
+                ),
+
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: users.length,
+                    itemBuilder: (context, index) {
+                      final user = users[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
                         ),
-
-                        const SizedBox(width: 12),
-
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
                             children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    user['hoTen'] ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                              CircleAvatar(
+                                radius: 25,
+                                backgroundColor: Colors.blue,
+                                child: Text(
+                                  user['hoTen'] != null &&
+                                          user['hoTen'].isNotEmpty
+                                      ? user['hoTen'][0].toUpperCase()
+                                      : '?',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
                                   ),
-
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: user['trangThai'] == true
-                                          ? Colors.green
-                                          : Colors.red,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      user['trangThai'] == true
-                                          ? 'Hoạt động'
-                                          : 'Khóa',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
 
-                              const SizedBox(height: 4),
-                              Text('${user['taiKhoan'] ?? ''}'),
-                              Text('${user['email'] ?? ''}'),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${user['vaiTro'] ?? 'hocvien'}',
-                                style: const TextStyle(color: Colors.blue),
+                              const SizedBox(width: 12),
+
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          user['hoTen'] ?? '',
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: user['trangThai'] == true
+                                                ? Colors.green
+                                                : Colors.red,
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            user['trangThai'] == true
+                                                ? 'Hoạt động'
+                                                : 'Khóa',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                    const SizedBox(height: 4),
+                                    Text('${user['taiKhoan'] ?? ''}'),
+                                    Text('${user['email'] ?? ''}'),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${user['vaiTro'] ?? 'hocvien'}',
+                                      style: const TextStyle(
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              Column(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.edit,
+                                      color: Colors.blue,
+                                    ),
+                                    onPressed: () {
+                                      openUpdateUser(user);
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                    ),
+                                    onPressed: () {
+                                      xoaUser(user['idNguoiDung']);
+                                    },
+                                  ),
+                                ],
                               ),
                             ],
                           ),
                         ),
-                        Column(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () {
-                                openUpdateUser(user);
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                xoaUser(user['idNguoiDung']);
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
+                ),
+              ],
             ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue,
-        onPressed: () {
-          openAddUserScreen();
-        },
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }

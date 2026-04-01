@@ -3,6 +3,7 @@ import 'package:frontend/admin/users/usersScreen.dart';
 import 'package:frontend/authentication/loginScreen.dart';
 import 'package:frontend/admin/menuUI/adminMenuBar.dart';
 import 'package:frontend/admin/classroom/classScreen.dart';
+import 'package:frontend/hocvien/hocVienScreen.dart';
 
 
 void main() {
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
         '/users': (context) => UsersScreen(),
         '/classroom': (context) => ClassScreen(),
         '/login': (context) => Loginscreen(),
+        '/hocvien': (context) =>HocVienScreen(),
       },
     );
   }

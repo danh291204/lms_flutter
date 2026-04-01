@@ -105,6 +105,7 @@ router.get('/', checkHocVien, async (req, res) => {
             include: {
                 khoahoc: {
                     select: {
+                        idKhoaHoc: true,
                         tenKhoaHoc: true,
                         code: true,
                         danhMuc: true,

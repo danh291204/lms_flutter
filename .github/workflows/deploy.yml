@@ -1,0 +1,34 @@
+name: Deploy Flutter Web
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install dependencies
+        # Di chuyển vào folder frontend để chạy lệnh
+        working-directory: ./frontend 
+        run: flutter pub get
+
+      - name: Build Web
+        working-directory: ./frontend
+        # Nhớ thay đổi 'ten_repository_cua_ban' ở dòng dưới nhé!
+        run: flutter build web --base-href "lms_flutter"
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          # Chỉ định đường dẫn đến thư mục build nằm bên trong folder frontend
+          folder: frontend/build/web 
+          branch: gh-pages

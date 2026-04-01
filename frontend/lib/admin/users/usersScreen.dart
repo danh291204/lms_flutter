@@ -129,6 +129,11 @@ class _UsersScreenState extends State<UsersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: FloatingActionButton(
+        onPressed: openAddUserScreen,
+        child: const Icon(Icons.add),
+      ),
       appBar: AppBar(title: const Text('Danh sách User')),
       drawer: AdminMenuBar(hoTen: hoTen, vaiTro: vaiTro),
       body: isLoading
@@ -286,10 +291,6 @@ class _UsersScreenState extends State<UsersScreen> {
                 ),
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: openAddUserScreen,
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }

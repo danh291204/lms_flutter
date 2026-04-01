@@ -73,12 +73,13 @@ router.post("/login", async (req, res) => {
 router.post("/dangky", async (req, res) => {
     try {
         let { hoTen, taiKhoan, matKhau, email,vaiTro } = req.body
-        hoTen = hoTen ? hoTen.trim() : undefined
+        hoTen = hoTen ? hoTen.trim().replace(/\s+/g, ' ') : undefined
         taiKhoan = taiKhoan ? taiKhoan.trim() : undefined
         matKhau = matKhau ? matKhau.trim() : undefined
         email = email ? email.trim() : undefined
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        const nameRegex = /^[a-zA-ZÀ-ỹ\s]+$/
 
         if (!hoTen || !taiKhoan || !matKhau || !email) {
             return res.status(400).json({
@@ -91,6 +92,12 @@ router.post("/dangky", async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: "Email không hợp lệ"
+            })
+        }
+        if (!nameRegex.test(hoTen)) {
+            return res.status(400).json({
+                success: false,
+                message: "Họ tên chỉ được chứa chữ cái và khoảng trắng"
             })
         }
 

@@ -55,11 +55,12 @@ router.get('/:id', checkAdmin, async (req, res) => {
 router.post('/', checkAdmin, async (req, res) => {
   try {
     let { hoTen, taiKhoan, matKhau, email, vaiTro } = req.body
-    hoTen = hoTen ? hoTen.trim() : undefined
+    hoTen = hoTen ? hoTen.trim().replace(/\s+/g, ' ') : undefined
     taiKhoan = taiKhoan ? taiKhoan.trim() : undefined
     matKhau = matKhau ? matKhau.trim() : undefined
     email = email ? email.trim() : undefined
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const nameRegex = /^[a-zA-ZÀ-ỹ\s]+$/
 
     if (!hoTen || !taiKhoan || !matKhau || !email) {
       return res.status(400).json({
@@ -73,7 +74,12 @@ router.post('/', checkAdmin, async (req, res) => {
         message: "Email không hợp lệ"
       })
     }
-
+    if (!nameRegex.test(hoTen)) {
+      return res.status(400).json({
+        success: false,
+        message: "Họ tên chỉ được chứa chữ cái và khoảng trắng"
+      })
+    }
     const existing = await prisma.nguoidung.findUnique({
       where: { taiKhoan }
     })
@@ -106,10 +112,11 @@ router.put('/:id', checkAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id)
     let { hoTen, email, trangThai, vaiTro, matKhau } = req.body
-    hoTen = hoTen ? hoTen.trim() : undefined
+    hoTen = hoTen ? hoTen.trim().replace(/\s+/g, ' ') : undefined
     matKhau = matKhau ? matKhau.trim() : undefined
     email = email ? email.trim() : undefined
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const nameRegex = /^[a-zA-ZÀ-ỹ\s]+$/
 
     if (!hoTen || !matKhau || !email) {
       return res.status(400).json({
@@ -121,6 +128,12 @@ router.put('/:id', checkAdmin, async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Email không hợp lệ"
+      })
+    }
+    if (!nameRegex.test(hoTen)) {
+      return res.status(400).json({
+        success: false,
+        message: "Họ tên chỉ được chứa chữ cái và khoảng trắng"
       })
     }
 

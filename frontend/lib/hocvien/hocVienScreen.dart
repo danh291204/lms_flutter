@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/hocvien/menuUI/hocVienMenuBar.dart';
+import 'package:frontend/api.dart';
 
 class HocVienScreen extends StatefulWidget {
   const HocVienScreen({super.key});
@@ -15,7 +16,7 @@ class _HocVienScreenState extends State<HocVienScreen> {
   List lopHocs = [];
   bool isLoading = true;
 
-  final String apiUrl = 'https://lms-flutter.onrender.com/hocvien/lophoc';
+  final String apiUrl = '${ApiConfig.baseUrl}/hocvien/lophoc';
   String hoTen = "";
   String vaiTro = "";
 

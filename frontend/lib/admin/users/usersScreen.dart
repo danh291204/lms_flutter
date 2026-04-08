@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'addUserScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/admin/menuUI/adminMenuBar.dart';
+import 'package:frontend/api.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -17,7 +18,7 @@ class _UsersScreenState extends State<UsersScreen> {
   List users = [];
   bool isLoading = true;
 
-  final String apiUrl = 'https://lms-flutter.onrender.com/admin/nguoidung';
+  final String apiUrl = "${ApiConfig.baseUrl}/admin/nguoidung";
   String hoTen = "";
   String vaiTro = "";
 

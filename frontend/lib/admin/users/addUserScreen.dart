@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:frontend/api.dart';
 
 class AddUserScreen extends StatefulWidget {
   const AddUserScreen({super.key, this.user});
@@ -21,7 +22,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
   String vaiTro = 'hocvien';
   bool get isEdit => widget.user != null;
 
-  final String apiUrl = 'https://lms-flutter.onrender.com/admin/nguoidung';
+  final String apiUrl = "${ApiConfig.baseUrl}/admin/nguoidung";
 
   Future<void> addUser() async {
     final prefs = await SharedPreferences.getInstance();

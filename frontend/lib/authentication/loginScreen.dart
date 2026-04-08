@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/authentication/dangKyScreen.dart';
+import 'package:frontend/api.dart';
 
 class Loginscreen extends StatefulWidget {
   const Loginscreen({super.key});
@@ -17,7 +18,7 @@ class _LoginscreenState extends State<Loginscreen> {
 
   bool _isLoading = false;
 
-  final String apiUrl = "https://lms-flutter.onrender.com/auth/login";
+  final String apiUrl = "${ApiConfig.baseUrl}/auth/login";
 
   Future<void> dangNhap() async {
     setState(() {

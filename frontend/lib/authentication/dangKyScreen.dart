@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:frontend/api.dart';
 
 class Dangkyscreen extends StatefulWidget {
   @override
@@ -14,7 +15,7 @@ class _DangkyscreenState extends State<Dangkyscreen> {
   final TextEditingController _matKhauController = TextEditingController();
   String _vaiTro = 'hocvien';
   bool _isLoading = false;
-  final String apiUrl = "https://lms-flutter.onrender.com/auth/dangky";
+  final String apiUrl = "${ApiConfig.baseUrl}/auth/dangky";
   
   Future<void> dangKy() async{
     setState(() {

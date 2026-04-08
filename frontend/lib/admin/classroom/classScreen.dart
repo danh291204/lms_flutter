@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/admin/menuUI/adminMenuBar.dart';
 import 'addClassScreen.dart';
+import 'package:frontend/api.dart';
 
 class ClassScreen extends StatefulWidget {
   const ClassScreen({super.key});
@@ -16,7 +17,7 @@ class _ClassScreenState extends State<ClassScreen> {
   List classes = [];
   bool isLoading = true;
 
-  final String apiUrl = 'https://lms-flutter.onrender.com/admin/lophoc';
+  final String apiUrl = "${ApiConfig.baseUrl}/admin/lophoc";
 
   String hoTen = "";
   String vaiTro = "";

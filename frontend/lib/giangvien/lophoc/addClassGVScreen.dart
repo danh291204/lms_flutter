@@ -4,59 +4,29 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/api.dart';
 
-class AddClassScreen extends StatefulWidget {
-  const AddClassScreen({super.key, this.khoahoc});
+class AddClassGVScreen extends StatefulWidget {
+  const AddClassGVScreen({super.key, this.khoahoc});
   final Map<String, dynamic>? khoahoc;
 
   @override
-  State<AddClassScreen> createState() => _AddClassScreenState();
+  State<AddClassGVScreen> createState() => _AddClassGVScreenState();
 }
 
-class _AddClassScreenState extends State<AddClassScreen> {
+class _AddClassGVScreenState extends State<AddClassGVScreen> {
   final TextEditingController tenController = TextEditingController();
   final TextEditingController moTaController = TextEditingController();
   final TextEditingController danhMucController = TextEditingController();
 
   List giangViens = [];
-  int? selectedGiangVienId;
 
   bool trangThai = true;
 
   bool get isEdit => widget.khoahoc != null;
 
-  final String apiUrl = "${ApiConfig.baseUrl}/admin/lophoc";
-  Future<void> fetchGiangViens() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getInt("userId");
-
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/admin/nguoidung'),
-      headers: {
-        "Content-Type": "application/json",
-        "x-user-id": userId != null ? userId.toString() : ""
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-
-      setState(() {
-        giangViens =
-            data.where((u) => u['vaiTro'] == 'giangvien').toList();
-      });
-    }
-  }
+  final String apiUrl = "${ApiConfig.baseUrl}/giangvien/lophoc";
   Future<void> addClass() async {
-    if (selectedGiangVienId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Vui lòng chọn giảng viên")),
-      );
-      return;
-    }
-
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt("userId");
-
     final response = await http.post(
       Uri.parse(apiUrl),
       headers: {
@@ -67,7 +37,6 @@ class _AddClassScreenState extends State<AddClassScreen> {
         'tenKhoaHoc': tenController.text,
         'moTa': moTaController.text,
         'danhMuc': danhMucController.text,
-        'idGiangVien': selectedGiangVienId,
         'trangThai': trangThai,
       }),
     );
@@ -82,13 +51,6 @@ class _AddClassScreenState extends State<AddClassScreen> {
     }
   }
   Future<void> updateClass() async {
-    if (selectedGiangVienId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Vui lòng chọn giảng viên")),
-      );
-      return;
-    }
-
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt("userId");
     final response = await http.put(
@@ -101,7 +63,6 @@ class _AddClassScreenState extends State<AddClassScreen> {
         'tenKhoaHoc': tenController.text,
         'moTa': moTaController.text,
         'danhMuc': danhMucController.text,
-        'idGiangVien': selectedGiangVienId,
         'trangThai': trangThai,
       }),
     );
@@ -118,12 +79,10 @@ class _AddClassScreenState extends State<AddClassScreen> {
   @override
   void initState() {
     super.initState();
-    fetchGiangViens();
     if (widget.khoahoc != null) {
       tenController.text = widget.khoahoc!['tenKhoaHoc'] ?? '';
       moTaController.text = widget.khoahoc!['moTa'] ?? '';
       danhMucController.text = widget.khoahoc!['danhMuc'] ?? '';
-      selectedGiangVienId = widget.khoahoc!['idGiangVien'];
       trangThai = widget.khoahoc!['trangThai'] ?? true;
     }
   }
@@ -149,24 +108,6 @@ class _AddClassScreenState extends State<AddClassScreen> {
               controller: danhMucController,
               decoration: const InputDecoration(labelText: 'Danh mục'),
             ),
-
-            const SizedBox(height: 10),
-            DropdownButtonFormField<int>(
-              value: selectedGiangVienId,
-              items: giangViens.map<DropdownMenuItem<int>>((gv) {
-                return DropdownMenuItem<int>(
-                  value: gv['idNguoiDung'],
-                  child: Text("${gv['hoTen']} (${gv['email']})"),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedGiangVienId = value;
-                });
-              },
-              decoration: const InputDecoration(labelText: 'Giảng viên'),
-            ),
-
             const SizedBox(height: 10),
 
             SwitchListTile(

@@ -1,6 +1,6 @@
 import express from 'express'
 import { prisma } from '../../prisma/client.js'
-import { checkGiangVien } from '../middleware.js'
+import { checkGiangVien, checkHocVien } from '../middleware.js'
 
 const router = express.Router()
 
@@ -140,21 +140,38 @@ router.get('/dashboard', checkGiangVien, async (req, res) => {
 })
 
 router.get('/:id', checkGiangVien, async (req, res) => {
-  try {
-    const id = parseInt(req.params.id)
-
-    const user = await prisma.nguoidung.findUnique({
-      where: { idNguoiDung: id }
-    })
-
-    if (!user) {
-      return res.status(404).json({ message: 'Không tìm thấy user' })
+    try{
+        const id = parseInt(req.params.id)
+        const idGiangVien = req.user.idNguoiDung;
+        const lopHoc = await prisma.khoahoc.findUnique({
+            where: { idKhoaHoc: id },
+            include: {
+                nguoidung:{
+                    select: {
+                        hoTen: true
+                    },
+                },
+            }
+        })  
+        if (!lopHoc) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy khóa học"
+            })
+        }
+        if(lopHoc.idGiangVien !== idGiangVien){
+            return res.status(403).json({
+                success: false,
+                message: "Bạn không có quyền xem chi tiết khóa học này"
+            });
+        }
+        res.json({
+            success: true,
+            data: lopHoc
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message })
     }
-
-    res.json(user)
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
 })
 
 function taoCodeLopHoc(length = 6) {

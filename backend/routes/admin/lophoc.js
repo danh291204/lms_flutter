@@ -21,6 +21,85 @@ router.get('/', checkAdmin, async (req, res) => {
     }
 })
 
+router.get('/dashboard', checkAdmin, async (req, res) => {
+  try {
+    const [
+      totalUsers,
+      totalStudents,
+      totalTeachers,
+      totalClasses,
+      totalEnrollments,
+      totalLessons
+    ] = await Promise.all([
+      prisma.nguoidung.count(),
+      prisma.nguoidung.count({ where: { vaiTro: 'hocvien' } }),
+      prisma.nguoidung.count({ where: { vaiTro: 'giangvien' } }),
+      prisma.khoahoc.count(),
+      prisma.dangky_khoahoc.count(),
+      prisma.baihoc.count()
+    ]);
+
+    const topClasses = await prisma.khoahoc.findMany({
+      include: {
+        _count: {
+          select: { dangky_khoahoc: true }
+        },
+        nguoidung: {
+          select: { hoTen: true }
+        }
+      },
+      orderBy: {
+        dangky_khoahoc: { _count: 'desc' }
+      },
+      take: 5
+    });
+
+    const recentUsers = await prisma.nguoidung.findMany({
+      orderBy: { idNguoiDung: 'desc' }, 
+      take: 5,
+      select: {
+        idNguoiDung: true,
+        hoTen: true,
+        email: true,
+        vaiTro: true,
+      }
+    });
+    const userRoleStats = await prisma.nguoidung.groupBy({
+      by: ['vaiTro'],
+      _count: true
+    });
+
+    const systemProgress = await prisma.progress.groupBy({
+      by: ['trangThai'],
+      _count: true
+    });
+
+    res.json({
+      overview: {
+        totalUsers,
+        totalStudents,
+        totalTeachers,
+        totalClasses,
+        totalEnrollments,
+        totalLessons
+      },
+      topClasses: topClasses.map(c => ({
+        idKhoaHoc: c.idKhoaHoc,
+        tenKhoaHoc: c.tenKhoaHoc,
+        giangVien: c.nguoidung?.hoTen || "Chưa phân công",
+        totalStudents: c._count.dangky_khoahoc
+      })),
+      recentUsers,
+      userRoleStats,
+      systemProgress
+    });
+
+  } catch (error) {
+    console.error("Lỗi Admin Dashboard:", error);
+    res.status(500).json({ error: "Lỗi hệ thống khi lấy dữ liệu Dashboard Admin" });
+  }
+});
+
 router.get('/:id', checkAdmin, async (req, res) => {
     try{
         const id = parseInt(req.params.id)

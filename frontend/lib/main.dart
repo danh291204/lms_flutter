@@ -6,6 +6,7 @@ import 'package:frontend/hocvien/hocVienScreen.dart';
 import 'package:frontend/giangvien/lopHocScreen.dart';
 import 'package:frontend/giangvien/dashBoardGiangVien.dart';
 import 'package:frontend/giangvien/lopHocLuuTruGV.dart';
+import 'package:frontend/admin/dashBoardAdminScreen.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
         '/homeHocVien': (context) => HocVienScreen(),
         '/dashboardGiangVien': (context) => DashboardGVScreen(),
         '/lopHocDaLuuTru': (context) => LopHocLuuTruGVScreen(),
+        '/dashBoardAdmin':(context)=> DashboardAdminScreen(),
       },
     );
   }

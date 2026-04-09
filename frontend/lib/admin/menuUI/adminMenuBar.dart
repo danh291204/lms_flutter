@@ -39,6 +39,14 @@ class AdminMenuBar extends StatelessWidget {
             },
           ),
 
+          ListTile(
+            leading: const Icon(Icons.people),
+            title: const Text("Dashboard"),
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/dashBoardAdmin');
+            },
+          ),
+
           const Divider(),
 
           ListTile(

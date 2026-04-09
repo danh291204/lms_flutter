@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart'; // Để mở link tài liệu Cloudinary
 import 'package:frontend/api.dart';
 import 'package:frontend/giangvien/menuUI/giangVienMenuBar.dart';
 import 'addBaiHocScreen.dart';
+
 class ChiTietLopHocScreen extends StatefulWidget {
   final int idKhoaHoc;
   const ChiTietLopHocScreen({super.key, required this.idKhoaHoc});
@@ -14,6 +16,7 @@ class ChiTietLopHocScreen extends StatefulWidget {
 }
 
 class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
+  int _selectedIndex = 0; 
   bool isLoading = true;
   Map<String, dynamic>? lopHoc;
   List baiHocs = [];
@@ -38,66 +41,59 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
   }
 
   Future<void> loadAllData() async {
-    await Future.wait([loadChiTietLopHoc(), loadBaiHoc()]);
-    setState(() {
-      isLoading = false;
-    });
+    setState(() => isLoading = true);
+    try {
+      await Future.wait([loadChiTietLopHoc(), loadBaiHoc()]);
+    } catch (e) {
+      debugPrint("Lỗi tải dữ liệu: $e");
+    } finally {
+      setState(() => isLoading = false);
+    }
   }
 
   Future<void> loadChiTietLopHoc() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt("userId");
-
     final res = await http.get(
       Uri.parse('$apiUrl/lophoc/${widget.idKhoaHoc}'),
-      headers: {
-        "Content-Type": "application/json",
-        "x-user-id": userId.toString(),
-      },
+      headers: {"Content-Type": "application/json", "x-user-id": userId.toString()},
     );
-
-    if (res.statusCode == 200) {
-      lopHoc = json.decode(res.body)['data'];
-    }
+    if (res.statusCode == 200) lopHoc = json.decode(res.body)['data'];
   }
 
   Future<void> loadBaiHoc() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt("userId");
-
     final res = await http.get(
       Uri.parse('$apiUrl/baihoc/${widget.idKhoaHoc}'),
-      headers: {
-        "Content-Type": "application/json",
-        "x-user-id": userId.toString(),
-      },
+      headers: {"Content-Type": "application/json", "x-user-id": userId.toString()},
     );
-
-    if (res.statusCode == 200) {
-      baiHocs = json.decode(res.body)['data'];
-    }
+    if (res.statusCode == 200) baiHocs = json.decode(res.body)['data'];
   }
 
   Future<void> openAddBaiHoc(int id) async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => Addbaihocscreen(idKhoaHoc: id),
-      ),
+      MaterialPageRoute(builder: (_) => Addbaihocscreen(idKhoaHoc: id)),
     );
-    if(result==true){
-      loadAllData();
+    if (result == true) loadAllData();
+  }
+
+  void _onItemTapped(int index) {
+    if (index == 1) {
+      openAddBaiHoc(widget.idKhoaHoc);
+    } else {
+      setState(() => _selectedIndex = index);
     }
   }
 
-  Icon getIcon(String loai) {
-    switch (loai) {
-      case 'video':
-        return const Icon(Icons.play_circle, color: Colors.blue);
-      case 'tailieu':
-        return const Icon(Icons.picture_as_pdf, color: Colors.red);
-      default:
-        return const Icon(Icons.book);
+  Future<void> _openFile(String? url) async {
+    if (url == null || url.isEmpty) return;
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Không thể mở liên kết này")),
+      );
     }
   }
 
@@ -105,102 +101,113 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          isLoading ? "Đang tải..." : (lopHoc?['tenKhoaHoc'] ?? "Chi tiết lớp"),
-        ),
+        title: Text(isLoading ? "Đang tải..." : (lopHoc?['tenKhoaHoc'] ?? "Chi tiết lớp")),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
       drawer: GiangVienMenuBar(hoTen: hoTen, vaiTro: vaiTro),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    color: Colors.blue,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          lopHoc?['tenKhoaHoc'] ?? "",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          "Code: ${lopHoc?['code'] ?? ""}",
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      "Danh sách bài học",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+          : RefreshIndicator(
+              onRefresh: loadAllData,
+              child: _buildBodyContent(),
+            ),
+      
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: "Bài học"),
+          BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: "Up bài"),
+          BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: "Sinh viên"),
+        ],
+      ),
+    );
+  }
 
-                  const SizedBox(height: 10),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: baiHocs.length + 1, 
-                    itemBuilder: (context, index) {
-                      if (index == baiHocs.length) {
-                        return GestureDetector(
-                          onTap: () => openAddBaiHoc(widget.idKhoaHoc),
-                          child: Card(
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
-                            color: Colors.blue.withOpacity(0.1),
-                            child: const ListTile(
-                              leading: Icon(Icons.add, color: Colors.blue),
-                              title: Text(
-                                "Thêm bài học",
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-                      final b = baiHocs[index];
-
-                      return Card(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 6,
-                        ),
-                        child: ListTile(
-                          leading: getIcon(b['loai'] ?? ''),
-                          title: Text(b['tenBaiHoc'] ?? ""),
-                          subtitle: Text("Thứ tự: ${b['thuTu'] ?? 0}"),
-                          onTap: () {
-                            // TODO: chi tiết bài học
-                          },
-                        ),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 80),
-                ],
+  Widget _buildBodyContent() {
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Lớp học
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              color: Colors.blue,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
               ),
             ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  lopHoc?['tenKhoaHoc'] ?? "",
+                  style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.qr_code, color: Colors.white70, size: 18),
+                    const SizedBox(width: 8),
+                    Text("Mã lớp: ${lopHoc?['code'] ?? ""}", style: const TextStyle(color: Colors.white70)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
+            child: Text("DANH SÁCH BÀI GIẢNG", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+          ),
+
+          // Danh sách bài học từ Database
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: baiHocs.length,
+            itemBuilder: (context, index) {
+              final b = baiHocs[index];
+              final hasVideo = b['videoUrl'] != null && b['videoUrl'] != "";
+              final hasDoc = b['taiLieuUrl'] != null && b['taiLieuUrl'] != "";
+
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 1,
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  leading: CircleAvatar(
+                    backgroundColor: hasVideo ? Colors.blue.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+                    child: Icon(
+                      hasVideo ? Icons.play_circle : Icons.description,
+                      color: hasVideo ? Colors.blue : Colors.orange,
+                    ),
+                  ),
+                  title: Text(b['tenBaiHoc'] ?? "", style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text("Thứ tự: ${b['thuTu'] ?? index + 1}"),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () {
+                    
+                  },
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 100), // Khoảng đệm để không bị che bởi BottomBar
+        ],
+      ),
     );
   }
 }

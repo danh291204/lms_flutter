@@ -4,6 +4,7 @@ import nguoiDungRoutes from './routes/admin/nguoidung.js'
 import authRoutes from './routes/auth.js'
 import lopHocAdminRoutes from './routes/admin/lophoc.js'
 import lopHocHocVienRoutes from './routes/hocvien/lophoc.js'
+import baiHocHocVienRoutes from './routes/hocvien/baihoc.js'
 import lopHocGiangVienRoutes from './routes/giangvien/lophoc.js'
 import baiHocGiangVienRoutes from './routes/giangvien/baihoc.js'
 import cors from 'cors'
@@ -22,6 +23,7 @@ app.use('/auth', authRoutes)
 app.use('/hocvien/lophoc', lopHocHocVienRoutes)
 app.use('/giangvien/lophoc', lopHocGiangVienRoutes)
 app.use('/giangvien/baihoc',baiHocGiangVienRoutes)
+app.use('/hocvien/baihoc', baiHocHocVienRoutes)
 app.use('/', test)
 
 app.listen(PORT, () => {

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/hocvien/menuUI/hocVienMenuBar.dart';
 import 'package:frontend/api.dart';
+import 'package:frontend/hocvien/lophoc/chiTietLopHocHV.dart';
 
 class HocVienScreen extends StatefulWidget {
   const HocVienScreen({super.key});
@@ -60,6 +61,18 @@ class _HocVienScreenState extends State<HocVienScreen> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> openChiTietClass(Map<String, dynamic> lop) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChiTietLopHocHVScreen(idKhoaHoc: lop['idKhoaHoc']),
+      ),
+    );
+    if (result == true) {
+      fetchDSLopHoc();
     }
   }
 
@@ -256,7 +269,7 @@ class _HocVienScreenState extends State<HocVienScreen> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(16),
                       onTap: () {
-                        // TODO: chuyển sang trang chi tiết
+                        openChiTietClass(lop);
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

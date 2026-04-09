@@ -47,16 +47,24 @@ router.post('/upload-file/:idBaiHoc', checkGiangVien, upload.single('taiLieu'), 
         const file = req.file;
 
         if (!file) {
-            return res.status(400).json({ success: false, message: "Chưa chọn file" });
+            return res.status(400).json({ 
+                success: false, 
+                message: "Chưa chọn file" 
+            });
         }
+
+        console.log("MIME:", file.mimetype);
+        console.log("NAME:", file.originalname);
 
         const secureUrl = await uploadToCloudinary(file);
 
-        const updateData = {};
-        if (file.mimetype.startsWith('video/')) {
+        const ext = file.originalname.split('.').pop().toLowerCase();
+
+        let updateData = {};
+
+        if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) {
             updateData.videoUrl = secureUrl;
         } else {
-            // Các file .rar, .docx, .pdf sẽ vào đây
             updateData.taiLieuUrl = secureUrl;
         }
 
@@ -73,7 +81,10 @@ router.post('/upload-file/:idBaiHoc', checkGiangVien, upload.single('taiLieu'), 
 
     } catch (error) {
         console.error("Lỗi Upload:", error);
-        return res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
     }
 });
 

@@ -40,7 +40,7 @@ class AdminMenuBar extends StatelessWidget {
           ),
 
           ListTile(
-            leading: const Icon(Icons.people),
+            leading: const Icon(Icons.dashboard),
             title: const Text("Dashboard"),
             onTap: () {
               Navigator.pushReplacementNamed(context, '/dashBoardAdmin');

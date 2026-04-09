@@ -125,17 +125,24 @@ class _DashboardGVScreenState extends State<DashboardGVScreen> {
       height: 220,
       child: PieChart(
         PieChartData(
+          // Thêm khoảng cách giữa các phần cho đẹp
+          sectionsSpace: 2,
+          centerSpaceRadius: 40,
           sections: progressStats.map((data) {
             final value = (data['_count'] as int).toDouble();
             final status = data['trangThai'];
 
             Color color;
+            // Sửa lại case cho khớp với giá trị từ Backend/Prisma
             switch (status) {
-              case 'completed':
+              case 'hoan_thanh': // Khớp với Backend
                 color = Colors.green;
                 break;
-              case 'learning':
+              case 'dang_hoc': // Khớp với Backend
                 color = Colors.orange;
+                break;
+              case 'chua_hoc': // Khớp với Backend
+                color = Colors.blue;
                 break;
               default:
                 color = Colors.grey;
@@ -145,8 +152,9 @@ class _DashboardGVScreenState extends State<DashboardGVScreen> {
               value: value,
               color: color,
               title: "${value.toInt()}",
-              radius: 70,
+              radius: 60, // Giảm nhẹ radius để vừa vặn trong container
               titleStyle: const TextStyle(
+                fontSize: 14,
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
@@ -156,7 +164,7 @@ class _DashboardGVScreenState extends State<DashboardGVScreen> {
       ),
     );
   }
-
+  
   Widget buildClassItem(Map c) {
     return ListTile(
       leading: const Icon(Icons.class_),

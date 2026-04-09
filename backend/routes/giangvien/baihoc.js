@@ -4,58 +4,60 @@ import fs from 'fs';
 import path from 'path';
 import { prisma } from '../../prisma/client.js';
 import { checkGiangVien } from '../middleware.js';
-import { uploadToDrive } from './ggHelper.js';
+import { uploadToCloudinary } from './ggHelper.js'; 
 
 const router = express.Router();
 
-// 1. Cấu hình thư mục uploads tuyệt đối
 const uploadDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// 2. Khởi tạo Multer
 const upload = multer({ dest: uploadDir });
 
-// 3. THỨ TỰ QUAN TRỌNG: upload.single('file') phải đứng TRƯỚC checkGiangVien
-// routes/giangvien/baihoc.js
 router.post('/', checkGiangVien, async (req, res) => {
     try {
-        const { idKhoaHoc, tenBaiHoc, thuTu } = req.body;
-        
+        let { idKhoaHoc, tenBaiHoc, thuTu } = req.body;
+        tenBaiHoc = tenBaiHoc ? tenBaiHoc.trim() : undefined;
+
+        if (!tenBaiHoc) {
+            return res.status(400).json({ success: false, message: "Thiếu tên bài học!" });
+        }
+        if (!idKhoaHoc) {
+            return res.status(400).json({ success: false, message: "Thiếu ID khóa học!" });
+        }
+
         const newBaiHoc = await prisma.baihoc.create({
             data: {
                 idKhoaHoc: parseInt(idKhoaHoc),
                 tenBaiHoc: tenBaiHoc,
                 thuTu: thuTu ? parseInt(thuTu) : 1
-                // Các trường URL để trống hoặc null
             }
         });
 
-        res.status(201).json({ success: true, idBaiHoc: newBaiHoc.idBaiHoc });
+        return res.status(201).json({ success: true, idBaiHoc: newBaiHoc.idBaiHoc });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 });
 
 router.post('/upload-file/:idBaiHoc', checkGiangVien, upload.single('taiLieu'), async (req, res) => {
     try {
-        
         const { idBaiHoc } = req.params;
         const file = req.file;
 
-        if (!file) return res.status(400).json({ success: false, message: "Chưa chọn file" });
+        if (!file) {
+            return res.status(400).json({ success: false, message: "Chưa chọn file" });
+        }
 
-        // Upload lên Drive
-        const driveFileId = await uploadToDrive(file);
-        const driveUrl = `https://drive.google.com/file/d/${driveFileId}/view`;
+        const secureUrl = await uploadToCloudinary(file);
 
-        // Cập nhật URL vào Database
         const updateData = {};
         if (file.mimetype.startsWith('video/')) {
-            updateData.videoUrl = driveUrl;
+            updateData.videoUrl = secureUrl;
         } else {
-            updateData.taiLieuUrl = driveUrl;
+            // Các file .rar, .docx, .pdf sẽ vào đây
+            updateData.taiLieuUrl = secureUrl;
         }
 
         await prisma.baihoc.update({
@@ -63,9 +65,63 @@ router.post('/upload-file/:idBaiHoc', checkGiangVien, upload.single('taiLieu'), 
             data: updateData
         });
 
-        res.json({ success: true, message: "Upload file thành công!", url: driveUrl });
+        return res.json({ 
+            success: true, 
+            message: "Upload file thành công!", 
+            url: secureUrl 
+        });
+
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error("Lỗi Upload:", error);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.get('/:idKhoaHoc', checkGiangVien, async (req, res) => {
+    try {
+        const idGiangVien = req.user.idNguoiDung;
+        const idKhoaHoc = parseInt(req.params.idKhoaHoc);
+
+        const khoaHoc = await prisma.khoahoc.findFirst({
+            where: {
+                idKhoaHoc: idKhoaHoc,
+                idGiangVien: idGiangVien
+            }
+        });
+
+        if (!khoaHoc) {
+            return res.status(403).json({
+                success: false,
+                message: "Bạn không có quyền truy cập lớp này"
+            });
+        }
+
+        const baiHocs = await prisma.baihoc.findMany({
+            where: {
+                idKhoaHoc: idKhoaHoc
+            },
+            select: {
+                idBaiHoc: true,
+                tenBaiHoc: true,
+                videoUrl: true,
+                taiLieuUrl: true,
+                thuTu: true
+            },
+            orderBy: {
+                thuTu: 'asc'
+            }
+        });
+        const kq = baiHocs.map(b=>({
+            ...b, loai: b.videoUrl ? 'video' : b.taiLieuUrl ? 'taiLieu' : 'none'
+        }));
+
+        res.status(200).json({
+            success: true,
+            data: kq
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 

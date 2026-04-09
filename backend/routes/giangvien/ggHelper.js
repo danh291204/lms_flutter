@@ -2,88 +2,106 @@ import { google } from 'googleapis';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv'; // Thêm dòng này
+import dotenv from 'dotenv';
 
-// Khởi tạo dotenv để đọc file .env
+// Khởi tạo dotenv để đọc file .env khi chạy ở local
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Kiểm tra xem Folder ID có tồn tại không để tránh lỗi im lặng
+// 1. Lấy cấu hình từ biến môi trường
 const FOLDER_ID = process.env.DRIVE_FOLDER_ID;
+const ENV_KEY = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+
 if (!FOLDER_ID) {
-    console.error("CẢNH BÁO: DRIVE_FOLDER_ID chưa được định nghĩa trong .env");
+    console.error("❌ CẢNH BÁO: DRIVE_FOLDER_ID chưa được định nghĩa.");
 }
 
-const auth = new google.auth.GoogleAuth({
-  // Nếu có biến môi trường (trên Host) thì dùng nó, 
-  // nếu không (ở Local) thì đọc từ file json
-  credentials: process.env.GOOGLE_KEYS 
-    ? JSON.parse(process.env.GOOGLE_KEYS) 
-    : undefined,
-  keyFile: process.env.GOOGLE_KEYS 
-    ? undefined 
-    : path.join(__dirname, '../../google-key.json'),
-  scopes: ['https://www.googleapis.com/auth/drive'],
-});
+// 2. Cấu hình xác thực thông minh
+const authOptions = {
+    scopes: ['https://www.googleapis.com/auth/drive'],
+};
 
+if (ENV_KEY) {
+    // Ưu tiên sử dụng biến môi trường (Cho Render/Production)
+    try {
+        authOptions.credentials = JSON.parse(ENV_KEY);
+        console.log("🚀 Google Drive Auth: Đang sử dụng Environment Variable.");
+    } catch (parseErr) {
+        console.error("❌ Lỗi Parse JSON từ GOOGLE_SERVICE_ACCOUNT_JSON:", parseErr.message);
+    }
+} else {
+    // Sử dụng file vật lý nếu không có biến môi trường (Cho Local)
+    const keyPath = path.join(__dirname, '../../google-key.json');
+    if (fs.existsSync(keyPath)) {
+        authOptions.keyFile = keyPath;
+        console.log("💻 Google Drive Auth: Đang sử dụng file google-key.json.");
+    } else {
+        console.error("❌ Lỗi: Không tìm thấy cả biến môi trường lẫn file google-key.json");
+    }
+}
+
+const auth = new google.auth.GoogleAuth(authOptions);
 const drive = google.drive({ version: 'v3', auth });
 
+/**
+ * Hàm upload file lên Google Drive
+ */
 export const uploadToDrive = async (file) => {
-  // 1. Kiểm tra đầu vào
-  if (!file || !file.path) {
-    throw new Error("Dữ liệu file không hợp lệ");
-  }
+    // Kiểm tra đầu vào
+    if (!file || !file.path) {
+        throw new Error("Dữ liệu file không hợp lệ");
+    }
 
-  const fileMetadata = {
-    name: file.originalname,
-    parents: FOLDER_ID ? [FOLDER_ID] : [], 
-  };
+    const fileMetadata = {
+        name: file.originalname,
+        parents: FOLDER_ID ? [FOLDER_ID] : [], 
+    };
 
-  const media = {
-    mimeType: file.mimetype,
-    body: fs.createReadStream(file.path),
-  };
+    const media = {
+        mimeType: file.mimetype,
+        body: fs.createReadStream(file.path),
+    };
 
-  try {
-    // 2. Upload file
-    const response = await drive.files.create({
-      requestBody: fileMetadata,
-      media: media,
-      fields: 'id',
-    });
-
-    const fileId = response.data.id;
-    console.log(`✅ Đã upload lên Drive: ${fileId}`);
-
-    // 3. Chỉnh quyền công khai (Public)
     try {
-      await drive.permissions.create({
-        fileId: fileId,
-        requestBody: {
-          role: 'reader',
-          type: 'anyone',
-        },
-      });
-    } catch (permError) {
-      console.warn("⚠️ Không thể set quyền công khai, nhưng file đã được upload.");
-    }
+        // Thực hiện upload
+        const response = await drive.files.create({
+            requestBody: fileMetadata,
+            media: media,
+            fields: 'id',
+        });
 
-    return fileId;
+        const fileId = response.data.id;
+        console.log(`✅ Upload thành công! File ID: ${fileId}`);
 
-  } catch (error) {
-    console.error("❌ Drive Upload Error:", error.message);
-    throw error;
-  } finally {
-    // 4. LUÔN LUÔN xóa file tạm bất kể thành công hay thất bại
-    if (fs.existsSync(file.path)) {
-      try {
-        fs.unlinkSync(file.path);
-        console.log("🧹 Đã dọn dẹp file tạm.");
-      } catch (unlinkError) {
-        console.error("Lỗi khi xóa file tạm:", unlinkError);
-      }
+        // Chỉnh quyền xem công khai (Public) cho file vừa upload
+        try {
+            await drive.permissions.create({
+                fileId: fileId,
+                requestBody: {
+                    role: 'reader',
+                    type: 'anyone',
+                },
+            });
+        } catch (permError) {
+            console.warn("⚠️ Không thể set quyền công khai, nhưng file đã được upload.");
+        }
+
+        return fileId;
+
+    } catch (error) {
+        console.error("❌ Drive Upload Error:", error.message);
+        throw error;
+    } finally {
+        // QUAN TRỌNG: Luôn dọn dẹp file tạm để tránh tràn bộ nhớ Host
+        if (fs.existsSync(file.path)) {
+            try {
+                fs.unlinkSync(file.path);
+                console.log("🧹 Đã dọn dẹp file tạm trong thư mục uploads.");
+            } catch (unlinkError) {
+                console.error("Lỗi khi xóa file tạm:", unlinkError);
+            }
+        }
     }
-  }
 };

@@ -18,13 +18,24 @@ class Baikiemtragvscreen extends StatefulWidget {
 class _BaikiemtragvscreenState extends State<Baikiemtragvscreen> {
   List quizzes = [];
   bool isLoading = true;
+  String hoTen = "";
+  String vaiTro = "";
 
   final String apiUrl = '${ApiConfig.baseUrl}/giangvien/quiz';
 
   @override
   void initState() {
     super.initState();
+    loadUserInfo();
     fetchQuiz();
+  }
+
+  Future<void> loadUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      hoTen = prefs.getString("hoTen") ?? "";
+      vaiTro = prefs.getString("vaiTro") ?? "";
+    });
   }
 
   Future<void> fetchQuiz() async {
@@ -51,6 +62,7 @@ class _BaikiemtragvscreenState extends State<Baikiemtragvscreen> {
       setState(() => isLoading = false);
     }
   }
+
   Future<void> deleteQuiz(int idQuiz) async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt("userId");
@@ -94,155 +106,214 @@ class _BaikiemtragvscreenState extends State<Baikiemtragvscreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA), // Màu nền xám nhạt cho sang
       appBar: AppBar(
-        title: const Text("Bài kiểm tra"),
+        elevation: 0,
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
+        centerTitle: false,
+        title: const Text(
+          "Quản lý bài kiểm tra",
+          style: TextStyle(),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
+      drawer: GiangVienMenuBar(hoTen: hoTen, vaiTro: vaiTro),
+      floatingActionButton: FloatingActionButton.extended(
         backgroundColor: Colors.blue,
         onPressed: () async {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => AddBaiKiemTraGVScreen(
-                idKhoaHoc: widget.idKhoaHoc,
-              ),
+              builder: (_) =>
+                  AddBaiKiemTraGVScreen(idKhoaHoc: widget.idKhoaHoc),
             ),
           );
           fetchQuiz();
         },
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text("Thêm Quiz"),
       ),
-
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: fetchQuiz,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
+      body: RefreshIndicator(
+        onRefresh: fetchQuiz,
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : CustomScrollView(
+                slivers: [
+                  // Header xanh bo góc
+                  SliverToBoxAdapter(
+                    child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
                       decoration: const BoxDecoration(
                         color: Colors.blue,
                         borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(24),
-                          bottomRight: Radius.circular(24),
+                          bottomLeft: Radius.circular(30),
+                          bottomRight: Radius.circular(30),
                         ),
                       ),
-                      child: const Column(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             "Danh sách bài kiểm tra",
                             style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold),
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          SizedBox(height: 6),
-                          Text(
-                            "Quản lý quiz của lớp",
-                            style: TextStyle(color: Colors.white70),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.info_outline,
+                                color: Colors.white70,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                "Lớp hiện tại có ${quizzes.length} bài kiểm tra",
+                                style: const TextStyle(color: Colors.white70),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
-                      child: Text(
-                        "DANH SÁCH QUIZ",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.grey),
-                      ),
-                    ),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: quizzes.length,
-                      itemBuilder: (context, index) {
-                        final quiz = quizzes[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          elevation: 1,
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                            leading: CircleAvatar(
-                              backgroundColor:
-                                  Colors.blue.withOpacity(0.1),
-                              child: const Icon(Icons.quiz,
-                                  color: Colors.blue),
-                            ),
-                            title: Text(
-                              quiz["tenQuiz"] ?? "",
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                    "Thời gian: ${quiz["thoiGianLamBai"] ?? 0} phút"),
-                                Text(
-                                    "Số câu: ${quiz["quiz_questions"]?.length ?? 0}"),
-                              ],
-                            ),
-                            onTap: () async {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => AddBaiKiemTraGVScreen(
-                                    quiz: quiz,
-                                    idKhoaHoc: widget.idKhoaHoc,
-                                  ),
+                  ),
+
+                  // Phần danh sách
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
+                    sliver: quizzes.isEmpty
+                        ? const SliverToBoxAdapter(
+                            child: Center(
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 50),
+                                child: Text(
+                                  "Chưa có bài kiểm tra nào",
+                                  style: TextStyle(color: Colors.grey),
                                 ),
-                              );
-                              fetchQuiz();
-                            },
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.list_alt,
-                                      color: Colors.orange),
-                                  onPressed: () {
-                                     Navigator.push(
+                              ),
+                            ),
+                          )
+                        : SliverList(
+                            delegate: SliverChildBuilderDelegate((
+                              context,
+                              index,
+                            ) {
+                              final quiz = quizzes[index];
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.all(12),
+                                  leading: Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.assignment_turned_in,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    quiz["tenQuiz"] ?? "Không tên",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  subtitle: Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.timer_outlined,
+                                          size: 14,
+                                          color: Colors.grey,
+                                        ),
+                                        Text(
+                                          " ${quiz["thoiGianLamBai"] ?? 0}m  |  ",
+                                          style: const TextStyle(fontSize: 13),
+                                        ),
+                                        const Icon(
+                                          Icons.help_outline,
+                                          size: 14,
+                                          color: Colors.grey,
+                                        ),
+                                        Text(
+                                          " ${quiz["quiz_questions"]?.length ?? 0} câu",
+                                          style: const TextStyle(fontSize: 13),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  trailing: Wrap(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.edit_note,
+                                          color: Colors.orange,
+                                          size: 28,
+                                        ),
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  Cauhoigvscreen(quiz: quiz),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.delete_outline,
+                                          color: Colors.redAccent,
+                                        ),
+                                        onPressed: () =>
+                                            confirmDelete(quiz["idQuiz"]),
+                                      ),
+                                    ],
+                                  ),
+                                  onTap: () async {
+                                    // Chạm vào card để sửa thông tin Quiz
+                                    await Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => Cauhoigvscreen(
+                                        builder: (_) => AddBaiKiemTraGVScreen(
                                           quiz: quiz,
+                                          idKhoaHoc: widget.idKhoaHoc,
                                         ),
                                       ),
                                     );
+                                    fetchQuiz();
                                   },
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () =>
-                                      confirmDelete(quiz["idQuiz"]),
-                                ),
-                              ],
-                            ),
+                              );
+                            }, childCount: quizzes.length),
                           ),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 100),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ),
+      ),
     );
   }
 }

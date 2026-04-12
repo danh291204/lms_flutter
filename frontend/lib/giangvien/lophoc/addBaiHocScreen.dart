@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/foundation.dart'; // 🔥 kIsWeb
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:frontend/api.dart';
+import 'package:frontend/giangvien/menuUI/giangVienMenuBar.dart';
 
 class Addbaihocscreen extends StatefulWidget {
   final int idKhoaHoc;
@@ -20,22 +21,38 @@ class _Addbaihocscreen extends State<Addbaihocscreen> {
   final TextEditingController thuTuController = TextEditingController();
 
   PlatformFile? pickedFile;
-  File? selectedFile;       
+  File? selectedFile;
 
   bool isLoading = false;
+  String hoTen = "";
+  String vaiTro = "";
 
   final String apiUrl = "${ApiConfig.baseUrl}/giangvien/baihoc";
+
+  Future<void> loadUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      hoTen = prefs.getString("hoTen") ?? "";
+      vaiTro = prefs.getString("vaiTro") ?? "";
+    });
+  }
 
   Future<void> pickFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: [
-      'pdf', 'mp4', 'mkv',
-      'doc', 'docx',       
-      'rar', 'zip',        
-      'ppt', 'pptx',       
-      'xls', 'xlsx'        
-    ],
+        'pdf',
+        'mp4',
+        'mkv',
+        'doc',
+        'docx',
+        'rar',
+        'zip',
+        'ppt',
+        'pptx',
+        'xls',
+        'xlsx',
+      ],
       withData: true,
     );
 
@@ -49,12 +66,11 @@ class _Addbaihocscreen extends State<Addbaihocscreen> {
     }
   }
 
-
   Future<void> submit() async {
     if (tenController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Nhập tên bài học")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Nhập tên bài học")));
       return;
     }
 
@@ -73,7 +89,7 @@ class _Addbaihocscreen extends State<Addbaihocscreen> {
         body: jsonEncode({
           "idKhoaHoc": widget.idKhoaHoc,
           "tenBaiHoc": tenController.text.trim(),
-          "thuTu": int.tryParse(thuTuController.text) ?? 1
+          "thuTu": int.tryParse(thuTuController.text) ?? 1,
         }),
       );
 
@@ -83,7 +99,6 @@ class _Addbaihocscreen extends State<Addbaihocscreen> {
 
       final idBaiHoc = json.decode(res.body)['idBaiHoc'];
 
-
       if (pickedFile != null || selectedFile != null) {
         var request = http.MultipartRequest(
           'POST',
@@ -91,7 +106,6 @@ class _Addbaihocscreen extends State<Addbaihocscreen> {
         );
 
         request.headers["x-user-id"] = userId.toString();
-
 
         if (kIsWeb && pickedFile != null) {
           request.files.add(
@@ -101,14 +115,9 @@ class _Addbaihocscreen extends State<Addbaihocscreen> {
               filename: pickedFile!.name,
             ),
           );
-        }
-        // 🔥 ANDROID
-        else if (selectedFile != null) {
+        } else if (selectedFile != null) {
           request.files.add(
-            await http.MultipartFile.fromPath(
-              'taiLieu',
-              selectedFile!.path,
-            ),
+            await http.MultipartFile.fromPath('taiLieu', selectedFile!.path),
           );
         }
 
@@ -119,21 +128,20 @@ class _Addbaihocscreen extends State<Addbaihocscreen> {
         }
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Thêm bài học thành công")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Thêm bài học thành công")));
 
       Navigator.pop(context, true);
     } catch (e) {
       print(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Có lỗi xảy ra")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Có lỗi xảy ra")));
     }
 
     setState(() => isLoading = false);
   }
-
 
   Widget filePreview() {
     if (pickedFile == null && selectedFile == null) {
@@ -159,9 +167,8 @@ class _Addbaihocscreen extends State<Addbaihocscreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Thêm bài học"),
-      ),
+      appBar: AppBar(title: const Text("Thêm bài học")),
+      drawer: GiangVienMenuBar(hoTen: hoTen, vaiTro: vaiTro),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -201,13 +208,33 @@ class _Addbaihocscreen extends State<Addbaihocscreen> {
 
                   const SizedBox(height: 30),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: submit,
-                      child: const Text("Tạo bài học"),
-                    ),
-                  )
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            side: const BorderSide(color: Colors.grey),
+                          ),
+                          child: const Text(
+                            "Hủy / Quay lại",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: submit,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          child: const Text("Tạo bài học"),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),

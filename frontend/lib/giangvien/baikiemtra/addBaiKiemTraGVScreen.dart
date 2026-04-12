@@ -8,7 +8,7 @@ import 'package:frontend/giangvien/baikiemtra/addBaiKiemTraGVScreen.dart';
 
 class AddBaiKiemTraGVScreen extends StatefulWidget {
   final int idKhoaHoc;
-  final Map<String, dynamic>? quiz; // 👉 null = thêm, có = sửa
+  final Map<String, dynamic>? quiz;
 
   const AddBaiKiemTraGVScreen({
     super.key,

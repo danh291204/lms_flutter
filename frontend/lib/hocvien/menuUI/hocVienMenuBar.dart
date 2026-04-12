@@ -32,10 +32,18 @@ class Hocvienmenubar extends StatelessWidget {
           ),
 
           ListTile(
-            leading: const Icon(Icons.people),
-            title: const Text("Quản lý người dùng"),
+            leading: const Icon(Icons.recycling),
+            title: const Text("Lớp học đã lưu trữ"),
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/thongTinHocVien');
+              Navigator.pushReplacementNamed(context, '/lopHocLuuTruHV');
+            },
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.home_work),
+            title: const Text("Bài học - Bài tập chưa hoàn thành"),
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/chuaHoanThanhHV');
             },
           ),
 

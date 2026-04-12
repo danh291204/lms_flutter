@@ -27,6 +27,7 @@ class _ChiTietLopHocHVScreenState extends State<ChiTietLopHocHVScreen> {
   @override
   void initState() {
     super.initState();
+    loadUserInfo();
     loadAllData();
   }
 
@@ -43,7 +44,7 @@ class _ChiTietLopHocHVScreenState extends State<ChiTietLopHocHVScreen> {
     try {
       await Future.wait([
         loadChiTietLopHoc(),
-        loadBaiHoc(), // nếu bạn có API riêng
+        loadBaiHoc(),
       ]);
     } catch (e) {
       debugPrint("Lỗi: $e");

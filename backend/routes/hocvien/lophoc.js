@@ -101,7 +101,11 @@ router.get('/', checkHocVien, async (req, res) => {
     try {
         const idNguoiDung = req.user.idNguoiDung
         const danhSachLop = await prisma.dangky_khoahoc.findMany({
-            where: { idNguoiDung },
+            where: { idNguoiDung,
+                khoahoc:{
+                    trangThai: true
+                }
+             },
             include: {
                 khoahoc: {
                     select: {
@@ -127,6 +131,39 @@ router.get('/', checkHocVien, async (req, res) => {
         res.status(500).json({ error: error.message })
     }
 })
+
+router.get('/luutru', checkHocVien, async (req, res) => {
+    try {
+        const idNguoiDung = req.user.idNguoiDung;
+        const lopHocs = await prisma.dangky_khoahoc.findMany({
+            where: {
+                idNguoiDung: idNguoiDung,
+                khoahoc:{
+                    trangThai: false,
+                }
+            },
+            include:{
+                khoahoc:{
+                    select: {
+                        idKhoaHoc: true,
+                        tenKhoaHoc: true,
+                        code: true,
+                        moTa: true,
+                        danhMuc: true,
+                        trangThai: true
+                    }
+                }
+            }
+        });
+        res.status(200).json({
+            success: true,
+            data: lopHocs
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 router.get('/:idKhoaHoc', checkHocVien, async (req, res) => {
     try{

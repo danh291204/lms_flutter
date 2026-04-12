@@ -2,10 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart'; // Để mở link tài liệu Cloudinary
+import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/api.dart';
 import 'package:frontend/giangvien/menuUI/giangVienMenuBar.dart';
 import 'addBaiHocScreen.dart';
+import 'package:frontend/giangvien/baikiemtra/baiKiemTraGVScreen.dart';
 
 class ChiTietLopHocScreen extends StatefulWidget {
   final int idKhoaHoc;
@@ -82,9 +83,21 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
   void _onItemTapped(int index) {
     if (index == 1) {
       openAddBaiHoc(widget.idKhoaHoc);
-    } else {
+    } 
+    else if (index == 2) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (_) => Baikiemtragvscreen(
+            idKhoaHoc: widget.idKhoaHoc,
+          ),
+        ),
+      );
+    }
+    else {
       setState(() => _selectedIndex = index);
     }
+    
   }
 
   Future<void> _openFile(String? url) async {
@@ -122,6 +135,7 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: "Bài học"),
           BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: "Up bài"),
+          BottomNavigationBarItem(icon: Icon(Icons.quiz), label: "Quiz"),
           BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: "Sinh viên"),
         ],
       ),
@@ -199,13 +213,12 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
                   ),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () {
-                    
                   },
                 ),
               );
             },
           ),
-          const SizedBox(height: 100), // Khoảng đệm để không bị che bởi BottomBar
+          const SizedBox(height: 100),
         ],
       ),
     );

@@ -7,6 +7,7 @@ import lopHocHocVienRoutes from './routes/hocvien/lophoc.js'
 import baiHocHocVienRoutes from './routes/hocvien/baihoc.js'
 import lopHocGiangVienRoutes from './routes/giangvien/lophoc.js'
 import baiHocGiangVienRoutes from './routes/giangvien/baihoc.js'
+import quizGiangVienRoutes from './routes/giangvien/quiz.js'
 import cors from 'cors'
 
 const app = express()
@@ -24,6 +25,7 @@ app.use('/hocvien/lophoc', lopHocHocVienRoutes)
 app.use('/giangvien/lophoc', lopHocGiangVienRoutes)
 app.use('/giangvien/baihoc',baiHocGiangVienRoutes)
 app.use('/hocvien/baihoc', baiHocHocVienRoutes)
+app.use('/giangvien/quiz',quizGiangVienRoutes)
 app.use('/', test)
 
 app.listen(PORT, () => {

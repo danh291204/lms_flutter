@@ -17,7 +17,7 @@ class ChiTietLopHocScreen extends StatefulWidget {
 }
 
 class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
-  int _selectedIndex = 0; 
+  int _selectedIndex = 0;
   bool isLoading = true;
   Map<String, dynamic>? lopHoc;
   List baiHocs = [];
@@ -57,7 +57,10 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
     final userId = prefs.getInt("userId");
     final res = await http.get(
       Uri.parse('$apiUrl/lophoc/${widget.idKhoaHoc}'),
-      headers: {"Content-Type": "application/json", "x-user-id": userId.toString()},
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId.toString(),
+      },
     );
     if (res.statusCode == 200) lopHoc = json.decode(res.body)['data'];
   }
@@ -67,7 +70,10 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
     final userId = prefs.getInt("userId");
     final res = await http.get(
       Uri.parse('$apiUrl/baihoc/${widget.idKhoaHoc}'),
-      headers: {"Content-Type": "application/json", "x-user-id": userId.toString()},
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId.toString(),
+      },
     );
     if (res.statusCode == 200) baiHocs = json.decode(res.body)['data'];
   }
@@ -80,24 +86,69 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
     if (result == true) loadAllData();
   }
 
+  Future<void> deleteBaiHoc(int idBaiHoc) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt("userId");
+      final response = await http.delete(
+        Uri.parse('${apiUrl}/baihoc/$idBaiHoc'),
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": userId.toString(),
+        },
+      );
+      final data = jsonDecode(response.body);
+      if (data["success"] == true) {
+        loadAllData();
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Xoá bài học thành công")));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data["message"] ?? "Xoá thất bại")),
+        );
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void confirmDelete(int idBaiHoc) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Xoá bài học"),
+        content: const Text("Bạn có chắc muốn xoá bài học này không?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Huỷ"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              deleteBaiHoc(idBaiHoc);
+            },
+            child: const Text("Xoá", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _onItemTapped(int index) {
     if (index == 1) {
       openAddBaiHoc(widget.idKhoaHoc);
-    } 
-    else if (index == 2) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (_) => Baikiemtragvscreen(
-            idKhoaHoc: widget.idKhoaHoc,
-          ),
+    } else if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => Baikiemtragvscreen(idKhoaHoc: widget.idKhoaHoc),
         ),
       );
-    }
-    else {
+    } else {
       setState(() => _selectedIndex = index);
     }
-    
   }
 
   Future<void> _openFile(String? url) async {
@@ -114,7 +165,9 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(isLoading ? "Đang tải..." : (lopHoc?['tenKhoaHoc'] ?? "Chi tiết lớp")),
+        title: Text(
+          isLoading ? "Đang tải..." : (lopHoc?['tenKhoaHoc'] ?? "Chi tiết lớp"),
+        ),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -126,17 +179,26 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
               onRefresh: loadAllData,
               child: _buildBodyContent(),
             ),
-      
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: "Bài học"),
-          BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: "Up bài"),
-          BottomNavigationBarItem(icon: Icon(Icons.quiz), label: "Quiz"),
-          BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: "Sinh viên"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add_circle_outline),
+            label: "Tạo bài học",
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.quiz), label: "Bài kiểm tra"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people_outline),
+            label: "Quản lý học viên",
+          ),
         ],
       ),
     );
@@ -164,14 +226,21 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
               children: [
                 Text(
                   lopHoc?['tenKhoaHoc'] ?? "",
-                  style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     const Icon(Icons.qr_code, color: Colors.white70, size: 18),
                     const SizedBox(width: 8),
-                    Text("Mã lớp: ${lopHoc?['code'] ?? ""}", style: const TextStyle(color: Colors.white70)),
+                    Text(
+                      "Mã lớp: ${lopHoc?['code'] ?? ""}",
+                      style: const TextStyle(color: Colors.white70),
+                    ),
                   ],
                 ),
               ],
@@ -180,7 +249,10 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
 
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
-            child: Text("DANH SÁCH BÀI GIẢNG", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+            child: Text(
+              "DANH SÁCH BÀI GIẢNG",
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+            ),
           ),
 
           // Danh sách bài học từ Database
@@ -195,25 +267,40 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
 
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 elevation: 1,
                 child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   leading: CircleAvatar(
-                    backgroundColor: hasVideo ? Colors.blue.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+                    backgroundColor: hasVideo
+                        ? Colors.blue.withOpacity(0.1)
+                        : Colors.orange.withOpacity(0.1),
                     child: Icon(
                       hasVideo ? Icons.play_circle : Icons.description,
                       color: hasVideo ? Colors.blue : Colors.orange,
                     ),
                   ),
-                  title: Text(b['tenBaiHoc'] ?? "", style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(
+                    b['tenBaiHoc'] ?? "",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text("Thứ tự: ${b['thuTu'] ?? index + 1}"),
                   ),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                  },
+
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      final id = b['idBaiHoc'];
+                      confirmDelete(id);
+                    },
+                  ),
                 ),
               );
             },

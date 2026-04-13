@@ -134,8 +134,8 @@ class _BaikiemtragvscreenState extends State<Baikiemtragvscreen> {
           );
           fetchQuiz();
         },
-        icon: const Icon(Icons.add),
-        label: const Text("Thêm Quiz"),
+        icon: const Icon(Icons.add,),
+        label: const Text("Thêm Quiz",style: TextStyle(color: Colors.white),),
       ),
       body: RefreshIndicator(
         onRefresh: fetchQuiz,

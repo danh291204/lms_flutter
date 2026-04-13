@@ -29,6 +29,12 @@ class _Addbaihocscreen extends State<Addbaihocscreen> {
 
   final String apiUrl = "${ApiConfig.baseUrl}/giangvien/baihoc";
 
+  @override
+  void initState() {
+    super.initState();
+    loadUserInfo();
+  }
+
   Future<void> loadUserInfo() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -167,7 +173,14 @@ class _Addbaihocscreen extends State<Addbaihocscreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Thêm bài học")),
+      appBar: AppBar(
+        title: const Text(
+          "Thêm bài học",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.blue,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       drawer: GiangVienMenuBar(hoTen: hoTen, vaiTro: vaiTro),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -216,10 +229,11 @@ class _Addbaihocscreen extends State<Addbaihocscreen> {
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 15),
                             side: const BorderSide(color: Colors.grey),
+                            backgroundColor: Colors.red
                           ),
                           child: const Text(
                             "Hủy / Quay lại",
-                            style: TextStyle(color: Colors.grey),
+                            style: TextStyle(color: Colors.white),
                           ),
                         ),
                       ),
@@ -229,8 +243,9 @@ class _Addbaihocscreen extends State<Addbaihocscreen> {
                           onPressed: submit,
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 15),
+                            backgroundColor: Colors.blue
                           ),
-                          child: const Text("Tạo bài học"),
+                          child: const Text("Tạo bài học",style: TextStyle(color: Colors.white),),
                         ),
                       ),
                     ],

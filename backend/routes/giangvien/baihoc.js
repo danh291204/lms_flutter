@@ -136,4 +136,45 @@ router.get('/:idKhoaHoc', checkGiangVien, async (req, res) => {
     }
 });
 
+router.delete('/:idBaiHoc',checkGiangVien,async(req,res)=>{
+    try {
+        const idBaiHoc = parseInt(req.params.idBaiHoc);
+        const idGiangVien = req.user.idNguoiDung;
+        if (isNaN(idBaiHoc)) {
+            return res.status(400).json({
+                success: false,
+                message: "ID bài học không hợp lệ"
+            });
+        }
+        const baiHoc = await prisma.baihoc.findFirst({
+            where:{
+                idBaiHoc: idBaiHoc,
+                khoahoc:{
+                    idGiangVien
+                }
+            },
+            include:{
+                khoahoc: true
+            }
+        });
+        if(!baiHoc){
+            return res.status(403).json({
+                success: false,
+                message: "Bạn không có quyền hoặc bài học không tồn tại"
+            });
+        }
+        await prisma.baihoc.delete({
+            where:{
+                idBaiHoc:idBaiHoc
+            }
+        })
+        return res.json({
+            success: true,
+            message: "Xoá bài học thành công"
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, error: error.message });
+    }
+})
+
 export default router;

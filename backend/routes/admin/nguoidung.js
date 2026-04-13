@@ -154,15 +154,74 @@ router.put('/:id', checkAdmin, async (req, res) => {
   }
 })
 
+//delete
+// router.delete('/:id', checkAdmin, async (req, res) => { 
+//   try {
+//     const id = parseInt(req.params.id)
+
+//     await prisma.khoahoc.updateMany({
+//       where: { idGiangVien: id },
+//       data: { idGiangVien: null }
+//     })
+//     await prisma.nguoidung.delete({
+//       where: { idNguoiDung: id }
+//     })
+
+//     res.json({ message: 'Xóa thành công' })
+//   } catch (err) {
+//     res.status(500).json({ error: err.message })
+//   }
+// })
+
 router.delete('/:id', checkAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id)
+    const { force } = req.query
 
-    await prisma.nguoidung.delete({
+    const user = await prisma.nguoidung.findUnique({
       where: { idNguoiDung: id }
     })
+    if (!user) {
+      return res.status(404).json({ message: 'User không tồn tại' })
+    }
+    const [dangKy, khoaHoc] = await Promise.all([
+      prisma.dangky_khoahoc.count({
+        where: { idNguoiDung: id }
+      }),
+      prisma.khoahoc.count({
+        where: { idGiangVien: id }
+      })
+    ])
 
-    res.json({ message: 'Xóa thành công' })
+    const hasRelation = dangKy > 0 || khoaHoc > 0
+    if (hasRelation && force !== 'true') {
+      return res.status(200).json({
+        success: false,
+        requireConfirm: true,
+        message: `User đã đăng ký ${dangKy} lớp và dạy ${khoaHoc} khóa`,
+        data: {
+          soLopDangKy: dangKy,
+          soKhoaHocDay: khoaHoc
+        }
+      })
+    }
+    await prisma.$transaction([
+      prisma.dangky_khoahoc.deleteMany({
+        where: { idNguoiDung: id }
+      }),
+      prisma.khoahoc.updateMany({
+        where: { idGiangVien: id },
+        data: { idGiangVien: null }
+      }),
+      prisma.nguoidung.delete({
+        where: { idNguoiDung: id }
+      })
+    ])
+    res.json({
+      success: true,
+      message: 'Xóa thành công'
+    })
+
   } catch (err) {
     res.status(500).json({ error: err.message })
   }

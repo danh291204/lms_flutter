@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/api.dart';
 import 'package:frontend/hocvien/menuUI/hocVienMenuBar.dart';
 import 'package:frontend/hocvien/lophoc/hocBaiScreen.dart';
+import 'package:frontend/hocvien/lophoc/danhSachBaiKTScreen.dart';
 
 class ChiTietLopHocHVScreen extends StatefulWidget {
   final int idKhoaHoc;
@@ -42,10 +43,7 @@ class _ChiTietLopHocHVScreenState extends State<ChiTietLopHocHVScreen> {
   Future<void> loadAllData() async {
     setState(() => isLoading = true);
     try {
-      await Future.wait([
-        loadChiTietLopHoc(),
-        loadBaiHoc(),
-      ]);
+      await Future.wait([loadChiTietLopHoc(), loadBaiHoc()]);
     } catch (e) {
       debugPrint("Lỗi: $e");
     } finally {
@@ -99,6 +97,16 @@ class _ChiTietLopHocHVScreenState extends State<ChiTietLopHocHVScreen> {
     if (res.statusCode == 200) {
       baiHocs = json.decode(res.body)['data'];
     }
+  }
+
+  Future<void> openDSBaiKiemTraScreen() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Danhsachbaiktscreen(idKhoaHoc: widget.idKhoaHoc),
+      ),
+    );
+    await loadAllData();
   }
 
   @override
@@ -169,12 +177,26 @@ class _ChiTietLopHocHVScreenState extends State<ChiTietLopHocHVScreen> {
               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(lopHoc?['moTa'] ?? "Không có mô tả"),
           ),
-
+           Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: ElevatedButton.icon(
+              onPressed: openDSBaiKiemTraScreen,
+              icon: const Icon(Icons.quiz),
+              label: const Text("Xem bài kiểm tra"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purple,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
             child: Text(
@@ -263,7 +285,6 @@ class _ChiTietLopHocHVScreenState extends State<ChiTietLopHocHVScreen> {
               );
             },
           ),
-
           const SizedBox(height: 20),
         ],
       ),

@@ -96,24 +96,77 @@ class _UsersScreenState extends State<UsersScreen> {
     }
   }
 
-  Future<void> xoaUser(int id) async {
+  // Future<void> xoaUser(int id) async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     final userId = prefs.getInt("userId");
+  //     final response = await http.delete(
+  //       Uri.parse('$apiUrl/$id'),
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "x-user-id": userId != null ? userId.toString() : "",
+  //       },
+  //     );
+  //     if (response.statusCode == 200) {
+  //       fetchUsers();
+  //     } else {
+  //       throw Exception("Xóa thất bại");
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
+
+  Future<void> xoaUser(int id, {bool force = false}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt("userId");
+      final url = force ? '$apiUrl/$id?force=true' : '$apiUrl/$id';
       final response = await http.delete(
-        Uri.parse('$apiUrl/$id'),
+        Uri.parse(url),
         headers: {
           "Content-Type": "application/json",
           "x-user-id": userId != null ? userId.toString() : "",
         },
       );
-      if (response.statusCode == 200) {
+
+      final data = json.decode(response.body);
+      if (data['requireConfirm'] == true) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text("Xác nhận xóa"),
+            content: Text(data['message']),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Hủy"),
+              ),
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await xoaUser(id, force: true);
+                },
+                child: const Text("Xóa"),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+      if (response.statusCode == 200 && data['success'] == true) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Xóa thành công")));
         fetchUsers();
       } else {
-        throw Exception("Xóa thất bại");
+        throw Exception(data['message'] ?? "Xóa thất bại");
       }
     } catch (e) {
       print(e);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Có lỗi xảy ra")));
     }
   }
 

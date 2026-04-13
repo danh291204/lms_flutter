@@ -24,7 +24,7 @@ class _HocBaiScreenState extends State<HocBaiScreen> {
   VideoPlayerController? _controller;
   bool isVideo = false;
   bool isLoading = true;
-  bool daBaoHoanThanh = false; // 🔥 tránh gọi API nhiều lần
+  bool daBaoHoanThanh = false;
 
   @override
   void initState() {
@@ -42,18 +42,15 @@ class _HocBaiScreenState extends State<HocBaiScreen> {
       _controller = VideoPlayerController.network(videoUrl);
 
       await _controller!.initialize();
-
-      // 👉 auto play
       _controller!.play();
 
       setState(() {
         isLoading = false;
       });
 
-      // 👉 gọi đang học
       await hocBai("dang_hoc");
 
-      // 🔥 lắng nghe video
+      //lắng nghe video
       _controller!.addListener(() {
         final position = _controller!.value.position;
         final duration = _controller!.value.duration;
@@ -68,7 +65,7 @@ class _HocBaiScreenState extends State<HocBaiScreen> {
     } else if (taiLieuUrl != null && taiLieuUrl != "") {
       isVideo = false;
 
-      // 👉 tài liệu = mở là hoàn thành
+      //tài liệu = mở là hoàn thành
       await hocBai("hoan_thanh");
 
       setState(() {
@@ -129,10 +126,9 @@ class _HocBaiScreenState extends State<HocBaiScreen> {
           child: VideoPlayer(_controller!),
         ),
 
-        // 🔥 THANH TUA VIDEO
         VideoProgressIndicator(
           _controller!,
-          allowScrubbing: true, // 👉 cho phép kéo tua
+          allowScrubbing: true,
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         ),
 

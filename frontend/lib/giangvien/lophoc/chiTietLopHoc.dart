@@ -7,6 +7,7 @@ import 'package:frontend/api.dart';
 import 'package:frontend/giangvien/menuUI/giangVienMenuBar.dart';
 import 'addBaiHocScreen.dart';
 import 'package:frontend/giangvien/baikiemtra/baiKiemTraGVScreen.dart';
+import 'package:frontend/giangvien/quanlyhocvien/qlhvGVScreen.dart';
 
 class ChiTietLopHocScreen extends StatefulWidget {
   final int idKhoaHoc;
@@ -146,6 +147,13 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
           builder: (_) => Baikiemtragvscreen(idKhoaHoc: widget.idKhoaHoc),
         ),
       );
+    } else if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => QlhvGVScreen(idKhoaHoc: widget.idKhoaHoc),
+        ),
+      );
     } else {
       setState(() => _selectedIndex = index);
     }
@@ -194,7 +202,10 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
             icon: Icon(Icons.add_circle_outline),
             label: "Tạo bài học",
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.quiz), label: "Bài kiểm tra"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.quiz),
+            label: "Bài kiểm tra",
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.people_outline),
             label: "Quản lý học viên",

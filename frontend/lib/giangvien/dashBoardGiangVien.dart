@@ -99,7 +99,7 @@ class _DashboardGVScreenState extends State<DashboardGVScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Text(title, style: const TextStyle(color: Colors.white70))
+            Text(title, style: const TextStyle(color: Colors.white70)),
           ],
         ),
       ),
@@ -125,23 +125,20 @@ class _DashboardGVScreenState extends State<DashboardGVScreen> {
       height: 220,
       child: PieChart(
         PieChartData(
-          // Thêm khoảng cách giữa các phần cho đẹp
           sectionsSpace: 2,
           centerSpaceRadius: 40,
           sections: progressStats.map((data) {
             final value = (data['_count'] as int).toDouble();
             final status = data['trangThai'];
-
             Color color;
-            // Sửa lại case cho khớp với giá trị từ Backend/Prisma
             switch (status) {
-              case 'hoan_thanh': // Khớp với Backend
+              case 'hoan_thanh':
                 color = Colors.green;
                 break;
-              case 'dang_hoc': // Khớp với Backend
+              case 'dang_hoc':
                 color = Colors.orange;
                 break;
-              case 'chua_hoc': // Khớp với Backend
+              case 'chua_hoc':
                 color = Colors.blue;
                 break;
               default:
@@ -151,10 +148,10 @@ class _DashboardGVScreenState extends State<DashboardGVScreen> {
             return PieChartSectionData(
               value: value,
               color: color,
-              title: "${value.toInt()}",
-              radius: 60, // Giảm nhẹ radius để vừa vặn trong container
+              title: "$status\n${value.toInt()}",
+              radius: 60,
               titleStyle: const TextStyle(
-                fontSize: 14,
+                fontSize: 12,
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
@@ -164,7 +161,7 @@ class _DashboardGVScreenState extends State<DashboardGVScreen> {
       ),
     );
   }
-  
+
   Widget buildClassItem(Map c) {
     return ListTile(
       leading: const Icon(Icons.class_),
@@ -197,18 +194,30 @@ class _DashboardGVScreenState extends State<DashboardGVScreen> {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      buildStatCard("Lớp học",
-                          overview['totalClasses'] ?? 0, Icons.class_),
-                      buildStatCard("Học viên",
-                          overview['totalStudents'] ?? 0, Icons.people),
+                      buildStatCard(
+                        "Lớp học",
+                        overview['totalClasses'] ?? 0,
+                        Icons.class_,
+                      ),
+                      buildStatCard(
+                        "Học viên",
+                        overview['totalStudents'] ?? 0,
+                        Icons.people,
+                      ),
                     ],
                   ),
                   Row(
                     children: [
-                      buildStatCard("Bài học",
-                          overview['totalLessons'] ?? 0, Icons.menu_book),
-                      buildStatCard("Quiz",
-                          overview['totalQuizzes'] ?? 0, Icons.quiz),
+                      buildStatCard(
+                        "Bài học",
+                        overview['totalLessons'] ?? 0,
+                        Icons.menu_book,
+                      ),
+                      buildStatCard(
+                        "Quiz",
+                        overview['totalQuizzes'] ?? 0,
+                        Icons.quiz,
+                      ),
                     ],
                   ),
 
@@ -223,7 +232,7 @@ class _DashboardGVScreenState extends State<DashboardGVScreen> {
                         BoxShadow(
                           color: Colors.grey.withOpacity(0.2),
                           blurRadius: 6,
-                        )
+                        ),
                       ],
                     ),
                     child: buildPieChart(),

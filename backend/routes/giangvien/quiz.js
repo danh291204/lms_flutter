@@ -4,18 +4,18 @@ import { checkGiangVien } from '../middleware.js'
 
 const router = express.Router()
 
-router.get('/:idKhoaHoc',checkGiangVien,async(req,res)=>{
-    try{
-        const idKhoaHoc = parseInt(req.params.idKhoaHoc) 
+router.get('/:idKhoaHoc', checkGiangVien, async (req, res) => {
+    try {
+        const idKhoaHoc = parseInt(req.params.idKhoaHoc)
         const idGiangVien = req.user.idNguoiDung
-        if(isNaN(idKhoaHoc)){
+        if (isNaN(idKhoaHoc)) {
             return res.status(400).json({
                 success: false,
                 error: "ID khóa học không hợp lệ"
             });
         }
         const lophoc = await prisma.khoahoc.findFirst({
-            where:{
+            where: {
                 idGiangVien: idGiangVien,
                 idKhoaHoc: idKhoaHoc
             }
@@ -27,13 +27,13 @@ router.get('/:idKhoaHoc',checkGiangVien,async(req,res)=>{
             });
         }
         const quizzes = await prisma.quizzes.findMany({
-            where:{
-                idKhoaHoc:idKhoaHoc
+            where: {
+                idKhoaHoc: idKhoaHoc
             },
-            include:{
+            include: {
                 quiz_questions: true
             },
-            orderBy:{
+            orderBy: {
                 idQuiz: 'desc'
             }
         });
@@ -42,14 +42,82 @@ router.get('/:idKhoaHoc',checkGiangVien,async(req,res)=>{
             data: quizzes
         });
     }
-    catch(err){
+    catch (err) {
         res.status(500).json({
             error: err.message
         });
     }
 })
+router.get('/diemhv/:idQuiz', checkGiangVien, async (req, res) => {
+    try {
+        const idGiangVien = req.user.idNguoiDung
+        const idQuiz = parseInt(req.params.idQuiz)
+        const quiz = await prisma.quizzes.findFirst({
+            where: {
+                idQuiz,
+                khoahoc: {
+                    idGiangVien
+                }
+            },
+            include: {
+                khoahoc: true
+            }
+        })
+        if (!quiz) {
+            return res.status(403).json({
+                success: false,
+                message: "Không có quyền xem điểm"
+            })
+        }
+        const idKhoaHoc = quiz.khoahoc.idKhoaHoc
+        const hocViens = await prisma.dangky_khoahoc.findMany({
+            where: { idKhoaHoc },
+            include: {
+                nguoidung: {
+                    select: {
+                        idNguoiDung: true,
+                        hoTen: true,
+                        email: true
+                    }
+                }
+            }
+        })
+        const results = await prisma.quiz_results.findMany({
+            where: { idQuiz }
+        })
+        const mapKetQua = new Map()
+            results.forEach(r => {
+                mapKetQua.set(r.idNguoiDung, r)
+        })
+        const finalData = hocViens.map(hv => {
+            const kq = mapKetQua.get(hv.idNguoiDung)
+            return {
+                idNguoiDung: hv.idNguoiDung,
+                hoTen: hv.nguoidung.hoTen,
+                email: hv.nguoidung.email,
+                diemSo: kq ? Number(kq.diemSo) : null,
+                trangThai: kq ? "Đã làm" : "Chưa làm",
+                ngayLamBai: kq ? kq.ngayLamBai : null
+            }
+        })
+        finalData.sort((a, b) => {
+            if (a.diemSo == null) return 1
+            if (b.diemSo == null) return -1
+            return b.diemSo - a.diemSo
+        })
+        res.json({
+            success: true,
+            data: finalData
+        })
+    }
+    catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
+    }
 
-router.post('/',checkGiangVien,async(req,res)=>{
+})
+router.post('/', checkGiangVien, async (req, res) => {
     try {
         let { tenQuiz, thoiGianLamBai, idKhoaHoc } = req.body;
         tenQuiz = tenQuiz?.trim();
@@ -158,7 +226,7 @@ router.put('/cauhoi/:idCauHoi', checkGiangVien, async (req, res) => {
             });
         }
 
-        if (!['A','B','C','D'].includes(dapAnDung)) {
+        if (!['A', 'B', 'C', 'D'].includes(dapAnDung)) {
             return res.status(400).json({
                 error: "Đáp án không hợp lệ"
             });
@@ -312,8 +380,8 @@ router.put('/:idQuiz', checkGiangVien, async (req, res) => {
         });
     }
 });
-router.delete('/:idQuiz',checkGiangVien,async(req,res)=>{
-     try {
+router.delete('/:idQuiz', checkGiangVien, async (req, res) => {
+    try {
         const idQuiz = parseInt(req.params.idQuiz);
         const idGiangVien = req.user.idNguoiDung;
         if (isNaN(idQuiz)) {

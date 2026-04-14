@@ -198,7 +198,7 @@ router.delete('/:id', checkAdmin, async (req, res) => {
       return res.status(200).json({
         success: false,
         requireConfirm: true,
-        message: `User đã đăng ký ${dangKy} lớp và dạy ${khoaHoc} khóa`,
+        message: `User đã đăng ký ${dangKy} lớp và dạy ${khoaHoc} lớp học`,
         data: {
           soLopDangKy: dangKy,
           soKhoaHocDay: khoaHoc

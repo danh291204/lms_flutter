@@ -64,7 +64,7 @@ class _DanhsachbaiktscreenState extends State<Danhsachbaiktscreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Bài kiểm tra")),
+      appBar: AppBar(title: const Text("Bài kiểm tra",style: TextStyle(color: Colors.white),),backgroundColor: Colors.blue,iconTheme: const IconThemeData(color: Colors.white)),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(

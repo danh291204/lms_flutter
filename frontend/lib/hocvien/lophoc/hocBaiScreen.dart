@@ -181,13 +181,10 @@ class _HocBaiScreenState extends State<HocBaiScreen> {
                     child: Column(
                       children: [
                         isVideo ? buildVideo() : buildTaiLieu(),
-                        // Bạn có thể thêm mô tả bài học ở đây nếu muốn
                       ],
                     ),
                   ),
                 ),
-
-                // Thanh dưới cùng cố định (Bottom Bar)
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -195,7 +192,6 @@ class _HocBaiScreenState extends State<HocBaiScreen> {
                     border: const Border(top: BorderSide(color: Colors.grey)),
                   ),
                   child: SafeArea(
-                    // Thêm SafeArea để tránh bị đè bởi nút hệ thống
                     top: false,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

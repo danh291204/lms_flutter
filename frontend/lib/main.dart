@@ -8,6 +8,7 @@ import 'package:frontend/giangvien/dashBoardGiangVien.dart';
 import 'package:frontend/giangvien/lopHocLuuTruGV.dart';
 import 'package:frontend/admin/dashBoardAdminScreen.dart';
 import 'package:frontend/hocvien/lopHocLuuTruHV.dart';
+import 'package:frontend/hocvien/chuaHTHocVienScreen.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -39,6 +40,7 @@ class MyApp extends StatelessWidget {
         '/lopHocDaLuuTru': (context) => LopHocLuuTruGVScreen(),
         '/dashBoardAdmin':(context)=> DashboardAdminScreen(),
         '/lopHocLuuTruHV': (context) => LopHocLuuTruHVScreen(),
+        '/chuaHoanThanhHV': (context) => ChuaHTHocVienScreen(),
       },
     );
   }

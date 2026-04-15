@@ -120,6 +120,41 @@ router.get('/baikiemtra/:idQuiz', checkHocVien, async (req, res) => {
     }
 });
 
+router.get('/chualam', checkHocVien, async (req, res) => {
+  try {
+    const idNguoiDung = req.user.idNguoiDung;
+    const data = await prisma.khoahoc.findMany({
+      where: {
+        dangky_khoahoc: {
+          some: { idNguoiDung }
+        }
+      },
+      select: {
+        idKhoaHoc: true,
+        tenKhoaHoc: true,
+        quizzes: {
+          where: {
+            quiz_results: {
+              none: { idNguoiDung }
+            }
+          },
+          select: {
+            idQuiz: true,
+            tenQuiz: true,
+            thoiGianLamBai: true
+          }
+        }
+      }
+    });
+    res.json({
+      success: true,
+      data: data
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.post('/:idQuiz/nopbai', checkHocVien, async (req, res) => {
     try {
         const idNguoiDung = req.user.idNguoiDung

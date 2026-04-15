@@ -4,6 +4,59 @@ import { checkHocVien } from '../middleware.js'
 
 const router = express.Router()
 
+router.get("/chuahoc", checkHocVien, async (req, res) => {
+  try {
+    const idNguoiDung = req.user.idNguoiDung;
+    const data = await prisma.khoahoc.findMany({
+      where: {
+        dangky_khoahoc: {
+          some: { idNguoiDung },
+        },
+      },
+      select: {
+        idKhoaHoc: true,
+        tenKhoaHoc: true,
+        baihoc: {
+          where: {
+            OR: [
+              {
+                progress: {
+                  none: { idNguoiDung },
+                },
+              },
+              {
+                progress: {
+                  some: {
+                    idNguoiDung,
+                    trangThai: {
+                      in: ["chua_hoc", "dang_hoc"],
+                    },
+                  },
+                },
+              },
+            ],
+          },
+          include: {
+            progress: {
+              where: { idNguoiDung },
+            },
+          },
+          orderBy: {
+            thuTu: "asc",
+          },
+        },
+      },
+    });
+    res.json({
+      success: true,
+      data: data
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false });
+  }
+});
+
 router.get("/:idKhoaHoc", checkHocVien, async (req, res) => {
   try {
     const idNguoiDung = req.user.idNguoiDung;
@@ -132,7 +185,6 @@ router.post("/hoc-bai", checkHocVien, async (req, res) => {
         },
       });
     } else {
-      // 👉 Update
       progress = await prisma.progress.update({
         where: { idProgress: existing.idProgress },
         data: {

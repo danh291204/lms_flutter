@@ -204,6 +204,13 @@ class _ChiTietLopHocHVScreenState extends State<ChiTietLopHocHVScreen> {
               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              "Tổng bài học: ${baiHocs.length}",
+              style: const TextStyle(color: Colors.blue),
+            ),
+          ),
 
           ListView.builder(
             shrinkWrap: true,

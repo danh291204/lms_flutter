@@ -76,7 +76,11 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
         "x-user-id": userId.toString(),
       },
     );
-    if (res.statusCode == 200) baiHocs = json.decode(res.body)['data'];
+    if (res.statusCode == 200) {
+      setState(() {
+        baiHocs = json.decode(res.body)['data'];
+      });
+    }
   }
 
   Future<void> openAddBaiHoc(int id) async {
@@ -221,7 +225,6 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Lớp học
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -244,12 +247,28 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Row(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.qr_code, color: Colors.white70, size: 18),
-                    const SizedBox(width: 8),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.qr_code,
+                          color: Colors.white70,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          "Mã lớp: ${lopHoc?['code'] ?? ""}",
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 4),
+
                     Text(
-                      "Mã lớp: ${lopHoc?['code'] ?? ""}",
+                      "Số bài học: ${baiHocs.length}",
                       style: const TextStyle(color: Colors.white70),
                     ),
                   ],
@@ -265,8 +284,6 @@ class _ChiTietLopHocScreen extends State<ChiTietLopHocScreen> {
               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
             ),
           ),
-
-          // Danh sách bài học từ Database
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),

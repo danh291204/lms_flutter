@@ -21,6 +21,11 @@ class _UsersScreenState extends State<UsersScreen> {
   final String apiUrl = "${ApiConfig.baseUrl}/admin/nguoidung";
   String hoTen = "";
   String vaiTro = "";
+  int totalUsers = 0;
+  int lockedUsers = 0;
+  int adminCount = 0;
+  int giangVienCount = 0;
+  int hocVienCount = 0;
 
   @override
   void initState() {
@@ -50,9 +55,32 @@ class _UsersScreenState extends State<UsersScreen> {
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        int total = data.length;
+        int locked = 0;
+        int admin = 0;
+        int gv = 0;
+        int hv = 0;
+        for (var u in data) {
+          if (u['trangThai'] == false) locked++;
+          switch (u['vaiTro']) {
+            case 'admin':
+              admin++;
+              break;
+            case 'giangvien':
+              gv++;
+              break;
+            default:
+              hv++;
+          }
+        }
         setState(() {
           users = data;
           isLoading = false;
+          totalUsers = total;
+          lockedUsers = locked;
+          adminCount = admin;
+          giangVienCount = gv;
+          hocVienCount = hv;
         });
       } else {
         throw Exception('Lỗi load data');
@@ -188,12 +216,77 @@ class _UsersScreenState extends State<UsersScreen> {
         onPressed: openAddUserScreen,
         child: const Icon(Icons.add),
       ),
-      appBar: AppBar(title: const Text('Danh sách User')),
+      appBar: AppBar(title: const Text('Danh sách User'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              openAddUserScreen();
+            },
+          ),
+        ], 
+      ),
       drawer: AdminMenuBar(hoTen: hoTen, vaiTro: vaiTro),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: ExpansionTile(
+                      title: const Text(
+                        "Thống kê người dùng",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: [
+                              _buildStat("Tổng", users.length, Colors.blue),
+                              _buildStat(
+                                "Bị khóa",
+                                users
+                                    .where((u) => u['trangThai'] == false)
+                                    .length,
+                                Colors.red,
+                              ),
+                              _buildStat(
+                                "Admin",
+                                users
+                                    .where((u) => u['vaiTro'] == 'admin')
+                                    .length,
+                                Colors.black,
+                              ),
+                              _buildStat(
+                                "GV",
+                                users
+                                    .where((u) => u['vaiTro'] == 'giangvien')
+                                    .length,
+                                Colors.orange,
+                              ),
+                              _buildStat(
+                                "HV",
+                                users
+                                    .where((u) => u['vaiTro'] == 'hocvien')
+                                    .length,
+                                Colors.green,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.all(10),
                   child: TextField(
@@ -345,6 +438,32 @@ class _UsersScreenState extends State<UsersScreen> {
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _buildStat(String label, int value, Color color) {
+    return Container(
+      width: 100,
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            "$value",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(fontSize: 12)),
+        ],
+      ),
     );
   }
 }

@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/api.dart';
+import 'package:excel/excel.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:share_plus/share_plus.dart';
 
 class QlDiemGVScreen extends StatefulWidget {
   final int idKhoaHoc;
@@ -21,11 +26,51 @@ class _QlDiemGVScreenState extends State<QlDiemGVScreen> {
   int? selectedQuiz;
 
   final String baseUrl = ApiConfig.baseUrl;
+  int daLam = 0;
+  int chuaLam = 0;
+  int trenTB = 0;
+  int duoiTB = 0;
 
   @override
   void initState() {
     super.initState();
     loadQuiz();
+  }
+
+  Future<void> xuatFileExcel() async {
+    var excel = Excel.createExcel();
+    Sheet sheet = excel['BangDiem'];
+    sheet.appendRow([
+      "STT",
+      "Họ tên",
+      "Email",
+      "Điểm",
+      "Trạng thái",
+    ]);
+    for(int i =0 ;i< list.length;i++){
+      final item = list[i];
+      sheet.appendRow([
+        i+1,
+        item['hoTen'] ?? "",
+        item['email'] ?? "",
+        item['diemSo']?.toString() ?? "Chưa làm",
+      ]);
+    }
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File("${dir.path}/bang_diem.xlsx");
+
+    final bytes = excel.encode();
+    if (bytes != null) {
+      await file.writeAsBytes(bytes);
+    }
+    await OpenFilex.open(file.path);
+    await Share.shareXFiles(
+      [XFile(file.path)],
+      text: "Bảng điểm bài kiểm tra",
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Đã lưu file: ${file.path}")),
+    );
   }
 
   Future<void> loadQuiz() async {
@@ -64,6 +109,7 @@ class _QlDiemGVScreenState extends State<QlDiemGVScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt("userId");
+
       final res = await http.get(
         Uri.parse('$baseUrl/giangvien/quiz/diemhv/$idQuiz'),
         headers: {"x-user-id": userId.toString()},
@@ -71,9 +117,34 @@ class _QlDiemGVScreenState extends State<QlDiemGVScreen> {
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
+        final newList = data['data'] ?? [];
+        int _daLam = 0;
+        int _chuaLam = 0;
+        int _trenTB = 0;
+        int _duoiTB = 0;
+
+        for (var item in newList) {
+          final diem = item['diemSo'];
+
+          if (diem == null) {
+            _chuaLam++;
+          } else {
+            _daLam++;
+
+            if (diem >= 5) {
+              _trenTB++;
+            } else {
+              _duoiTB++;
+            }
+          }
+        }
 
         setState(() {
-          list = data['data'] ?? [];
+          list = newList;
+          daLam = _daLam;
+          chuaLam = _chuaLam;
+          trenTB = _trenTB;
+          duoiTB = _duoiTB;
         });
       }
     } catch (e) {
@@ -90,6 +161,22 @@ class _QlDiemGVScreenState extends State<QlDiemGVScreen> {
     return Colors.red;
   }
 
+  Widget _buildStat(String label, int value, Color color) {
+    return Column(
+      children: [
+        Text(
+          "$value",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        Text(label),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,6 +184,20 @@ class _QlDiemGVScreenState extends State<QlDiemGVScreen> {
         title: const Text("Điểm bài kiểm tra"),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.table_chart),
+            onPressed: () {
+              if (list.isNotEmpty) {
+                xuatFileExcel();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Không có dữ liệu để xuất")),
+                );
+              }
+            },
+          )
+        ],
       ),
       body: Column(
         children: [
@@ -122,6 +223,33 @@ class _QlDiemGVScreenState extends State<QlDiemGVScreen> {
                   loadDiem(value);
                 }
               },
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildStat("Đã làm", daLam, Colors.green),
+                    _buildStat("Chưa làm", chuaLam, Colors.grey),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildStat(">= 5 điểm", trenTB, Colors.blue),
+                    _buildStat("< 5 điểm", duoiTB, Colors.red),
+                  ],
+                ),
+              ],
             ),
           ),
           Expanded(

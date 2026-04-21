@@ -12,6 +12,7 @@ class QlhvGVScreen extends StatefulWidget {
   @override
   State<QlhvGVScreen> createState() => _QlhvGVScreenState();
 }
+
 class _QlhvGVScreenState extends State<QlhvGVScreen> {
   List hocViens = [];
   bool isLoading = true;
@@ -46,6 +47,7 @@ class _QlhvGVScreenState extends State<QlhvGVScreen> {
       setState(() => isLoading = false);
     }
   }
+
   Future<void> deleteHocVien(int idNguoiDung) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -62,9 +64,9 @@ class _QlhvGVScreenState extends State<QlhvGVScreen> {
       final data = jsonDecode(res.body);
       if (data["success"] == true) {
         loadHocVien();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Đã xóa học viên")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Đã xóa học viên")));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data["message"] ?? "Xóa thất bại")),
@@ -107,74 +109,99 @@ class _QlhvGVScreenState extends State<QlhvGVScreen> {
         foregroundColor: Colors.white,
       ),
       body: isLoading
-    ? const Center(child: CircularProgressIndicator())
-    : Column(
-        children: [
-          // 🔥 BUTTON XEM ĐIỂM
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.bar_chart),
-                label: const Text("Xem điểm bài kiểm tra"),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  backgroundColor: Colors.green,
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                // 🔥 BUTTON XEM ĐIỂM
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.bar_chart),
+                      label: const Text("Xem điểm bài kiểm tra"),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: Colors.green,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                QlDiemGVScreen(idKhoaHoc: widget.idKhoaHoc),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          QlDiemGVScreen(idKhoaHoc: widget.idKhoaHoc),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.people, color: Colors.blue),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Tổng học viên: ${hocViens.length}",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: loadHocVien,
+                    child: ListView.builder(
+                      itemCount: hocViens.length,
+                      itemBuilder: (context, index) {
+                        final hv = hocViens[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.blue.withOpacity(0.1),
+                              child: const Icon(
+                                Icons.person,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            title: Text(
+                              hv['hoTen'] ?? "",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Text(hv['email'] ?? ""),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                confirmDelete(
+                                  hv['idNguoiDung'],
+                                  hv['hoTen'] ?? "",
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
+                  ),
+                ),
+              ],
             ),
-          ),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: loadHocVien,
-              child: ListView.builder(
-                itemCount: hocViens.length,
-                itemBuilder: (context, index) {
-                  final hv = hocViens[index];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.blue.withOpacity(0.1),
-                        child: const Icon(Icons.person, color: Colors.blue),
-                      ),
-                      title: Text(
-                        hv['hoTen'] ?? "",
-                        style:
-                            const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(hv['email'] ?? ""),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          confirmDelete(
-                            hv['idNguoiDung'],
-                            hv['hoTen'] ?? "",
-                          );
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          )
-        ],
-      ),
     );
   }
 }

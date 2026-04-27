@@ -246,7 +246,11 @@ class _HocVienScreenState extends State<HocVienScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("LMS - Học Viên")),
+      appBar: AppBar(title: const Text("Học Viên"),
+      backgroundColor: Colors.blue,
+        iconTheme: const IconThemeData(color: Colors.white),
+        foregroundColor: Colors.white,
+      ),
       drawer: Hocvienmenubar(hoTen: hoTen, vaiTro: vaiTro),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -339,7 +343,8 @@ class _HocVienScreenState extends State<HocVienScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showJoinDialog,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add,color: Colors.white,),
+        backgroundColor: Colors.blue,
       ),
     );
   }

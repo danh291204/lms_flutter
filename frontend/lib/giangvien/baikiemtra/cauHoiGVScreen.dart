@@ -20,7 +20,6 @@ class _CauhoigvscreenState extends State<Cauhoigvscreen> {
   @override
   void initState() {
     super.initState();
-    // cauHoi = widget.quiz["quiz_questions"] ?? [];
     fetchCauHoi();
   }
 
@@ -63,7 +62,7 @@ class _CauhoigvscreenState extends State<Cauhoigvscreen> {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt("userId");
       final res = await http.delete(
-        Uri.parse('$apiUrl/cauhoi/$id'), // apiUrl = .../giangvien/quiz
+        Uri.parse('$apiUrl/cauhoi/$id'),
         headers: {
           "Content-Type": "application/json",
           "x-user-id": userId.toString(),
@@ -172,7 +171,6 @@ class _CauhoigvscreenState extends State<Cauhoigvscreen> {
                   "dapAnDung": dapAn,
                 };
                 if (item == null) {
-                  // ADD
                   final res = await http.post(
                     Uri.parse('$apiUrl/${widget.quiz["idQuiz"]}/cauhoi'),
                     headers: {
@@ -182,10 +180,9 @@ class _CauhoigvscreenState extends State<Cauhoigvscreen> {
                     body: jsonEncode(body),
                   );
                   if (jsonDecode(res.body)["success"] == true) {
-                    await fetchCauHoi(); // Tải lại để lấy ID thật từ DB
+                    await fetchCauHoi();
                   }
                 } else {
-                  // EDIT
                   final res = await http.put(
                     Uri.parse('$apiUrl/cauhoi/${item["idCauHoi"]}'),
                     headers: {
@@ -215,26 +212,26 @@ class _CauhoigvscreenState extends State<Cauhoigvscreen> {
       appBar: AppBar(
         title: Text(widget.quiz["tenQuiz"]),
         backgroundColor: Colors.blue,
-        // Thêm nút refresh trên thanh công cụ nếu muốn
+        iconTheme: const IconThemeData(color: Colors.white),
+        foregroundColor: Colors.white,
         actions: [
           IconButton(onPressed: fetchCauHoi, icon: const Icon(Icons.refresh)),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showForm(),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white,),
+        backgroundColor: Colors.blue,
       ),
-      // Kiểm tra trạng thái loading ở đây
       body: isLoading
           ? const Center(
               child: CircularProgressIndicator(),
-            ) // Đang tải thì quay vòng tròn
+            )
           : cauHoi.isEmpty
           ? const Center(
               child: Text("Chưa có câu hỏi nào. Hãy thêm mới!"),
-            ) // Danh sách trống
+            )
           : RefreshIndicator(
-              // Thêm tính năng vuốt xuống để tải lại
               onRefresh: fetchCauHoi,
               child: ListView.builder(
                 itemCount: cauHoi.length,
@@ -259,16 +256,16 @@ class _CauhoigvscreenState extends State<Cauhoigvscreen> {
                             Text("B. ${data["B"]}"),
                             Text("C. ${data["C"]}"),
                             Text("D. ${data["D"]}"),
-                            const Divider(), // Dấu gạch ngang nhỏ
+                            const Divider(),
                             Text(
-                              "✔ Đáp án đúng: ${q["dapAnDung"]}",
+                              "Đáp án đúng: ${q["dapAnDung"]}",
                               style: const TextStyle(
                                 color: Colors.green,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
-                              "💰 Điểm: ${q["diemCauHoi"]}", // Hiển thị điểm số đã chia
+                              "Điểm: ${q["diemCauHoi"]}",
                               style: const TextStyle(
                                 color: Colors.blueGrey,
                                 fontSize: 12,

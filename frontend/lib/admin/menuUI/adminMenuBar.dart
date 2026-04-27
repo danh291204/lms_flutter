@@ -21,6 +21,9 @@ class AdminMenuBar extends StatelessWidget {
             currentAccountPicture: const CircleAvatar(
               child: Icon(Icons.admin_panel_settings),
             ),
+            decoration: BoxDecoration(
+              color: Colors.blue,
+            ),
           ),
 
           ListTile(

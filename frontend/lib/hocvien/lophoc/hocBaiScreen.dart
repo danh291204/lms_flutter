@@ -170,7 +170,11 @@ class _HocBaiScreenState extends State<HocBaiScreen> {
     final tenBai = widget.baiHoc['tenBaiHoc'] ?? "";
 
     return Scaffold(
-      appBar: AppBar(title: Text(tenBai)),
+      appBar: AppBar(title: Text(tenBai),
+        backgroundColor: Colors.blue,
+        iconTheme: const IconThemeData(color: Colors.white),
+        foregroundColor: Colors.white,
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -202,6 +206,10 @@ class _HocBaiScreenState extends State<HocBaiScreen> {
                             Navigator.pop(context, true);
                           },
                           child: const Text("Xong"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                          ),
                         ),
                       ],
                     ),

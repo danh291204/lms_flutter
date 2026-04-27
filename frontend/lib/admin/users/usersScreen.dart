@@ -214,9 +214,13 @@ class _UsersScreenState extends State<UsersScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: openAddUserScreen,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add,color: Colors.white,),
+        backgroundColor: Colors.blue,
       ),
       appBar: AppBar(title: const Text('Danh sách User'),
+        backgroundColor: Colors.blue,
+        iconTheme: const IconThemeData(color: Colors.white),
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.add),

@@ -134,7 +134,7 @@ class _BaikiemtragvscreenState extends State<Baikiemtragvscreen> {
           );
           fetchQuiz();
         },
-        icon: const Icon(Icons.add,),
+        icon: const Icon(Icons.add,color: Colors.white,),
         label: const Text("Thêm Quiz",style: TextStyle(color: Colors.white),),
       ),
       body: RefreshIndicator(
@@ -143,7 +143,6 @@ class _BaikiemtragvscreenState extends State<Baikiemtragvscreen> {
             ? const Center(child: CircularProgressIndicator())
             : CustomScrollView(
                 slivers: [
-                  // Header xanh bo góc
                   SliverToBoxAdapter(
                     child: Container(
                       width: double.infinity,
@@ -185,8 +184,6 @@ class _BaikiemtragvscreenState extends State<Baikiemtragvscreen> {
                       ),
                     ),
                   ),
-
-                  // Phần danh sách
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
                     sliver: quizzes.isEmpty
@@ -294,7 +291,6 @@ class _BaikiemtragvscreenState extends State<Baikiemtragvscreen> {
                                     ],
                                   ),
                                   onTap: () async {
-                                    // Chạm vào card để sửa thông tin Quiz
                                     await Navigator.push(
                                       context,
                                       MaterialPageRoute(

@@ -132,6 +132,9 @@ class _AddClassScreenState extends State<AddClassScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isEdit ? 'Sửa lớp học' : 'Thêm lớp học'),
+        backgroundColor: Colors.blue,
+        iconTheme: const IconThemeData(color: Colors.white),
+        foregroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(12),
@@ -177,6 +180,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
                   trangThai = value;
                 });
               },
+              activeColor: Colors.green,
             ),
 
             const SizedBox(height: 20),
@@ -189,7 +193,10 @@ class _AddClassScreenState extends State<AddClassScreen> {
                   addClass();
                 }
               },
-              child: Text(isEdit ? 'Cập nhật' : 'Thêm lớp'),
+              child: Text(isEdit ? 'Cập nhật' : 'Thêm lớp',style: TextStyle(color: Colors.white),),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+              ),
             ),
           ],
         ),

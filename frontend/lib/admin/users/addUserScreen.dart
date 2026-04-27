@@ -98,7 +98,11 @@ class _AddUserScreenState extends State<AddUserScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(isEdit ? 'Sửa User' : 'Thêm User')),
+      appBar: AppBar(title: Text(isEdit ? 'Sửa User' : 'Thêm User'),
+        backgroundColor: Colors.blue,
+        iconTheme: const IconThemeData(color: Colors.white),
+        foregroundColor: Colors.white,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: ListView(
@@ -147,6 +151,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                   trangThai = value;
                 });
               },
+              activeColor: Colors.green,
             ),
 
             const SizedBox(height: 20),
@@ -159,7 +164,11 @@ class _AddUserScreenState extends State<AddUserScreen> {
                   addUser();
                 }
               },
-              child: Text(isEdit ? 'Cập nhật' : 'Thêm User'),
+              child: Text(isEdit ? 'Cập nhật' : 'Thêm User',style: TextStyle(color: Colors.white),),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+              ),
+
             ),
           ],
         ),

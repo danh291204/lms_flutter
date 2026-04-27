@@ -112,14 +112,13 @@ class _QlhvGVScreenState extends State<QlhvGVScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                // 🔥 BUTTON XEM ĐIỂM
                 Padding(
                   padding: const EdgeInsets.all(12),
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      icon: const Icon(Icons.bar_chart),
-                      label: const Text("Xem điểm bài kiểm tra"),
+                      icon: const Icon(Icons.bar_chart,color: Colors.white,),
+                      label: const Text("Xem điểm bài kiểm tra",style: TextStyle(color: Colors.white),),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         backgroundColor: Colors.green,

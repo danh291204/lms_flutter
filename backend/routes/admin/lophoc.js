@@ -104,14 +104,32 @@ router.get('/:id', checkAdmin, async (req, res) => {
     try{
         const id = parseInt(req.params.id)
         const lopHoc = await prisma.khoahoc.findUnique({
-            where: { idKhoaHoc: id },
+            where: { 
+                idKhoaHoc: id 
+            },
             include: {
                 nguoidung:{
                     select: {
                         hoTen: true
                     },
                 },
-            }
+                dangky_khoahoc:{
+                    select:{
+                        idNguoiDung: true,
+                        nguoidung:{
+                            select:{
+                                hoTen: true,
+                                email: true
+                            }
+                        }
+                    }
+                },
+                _count:{
+                    select:{
+                        dangky_khoahoc: true
+                    }
+                }
+            },
         })  
         if (!lopHoc) {
             return res.status(404).json({

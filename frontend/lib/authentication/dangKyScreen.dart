@@ -79,7 +79,11 @@ class _DangkyscreenState extends State<Dangkyscreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Đăng ký')),
+      appBar: AppBar(title: const Text('Đăng ký'),
+        backgroundColor: Colors.blue,
+        iconTheme: const IconThemeData(color: Colors.white),
+        foregroundColor: Colors.white,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -127,7 +131,10 @@ class _DangkyscreenState extends State<Dangkyscreen> {
                 onPressed: _isLoading ? null : dangKy,
                 child: _isLoading
                     ? const CircularProgressIndicator()
-                    : const Text("Đăng ký"),
+                    : const Text("Đăng ký", style: TextStyle(color: Colors.white),),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                ),
               ),
             ),
           ],

@@ -175,6 +175,9 @@ class _DashboardGVScreenState extends State<DashboardGVScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Dashboard Giảng Viên"),
+        backgroundColor: Colors.blue,
+        iconTheme: const IconThemeData(color: Colors.white),
+        foregroundColor: Colors.white,
         leading: Builder(
           builder: (context) {
             return IconButton(

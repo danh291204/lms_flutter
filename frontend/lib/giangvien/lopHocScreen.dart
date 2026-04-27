@@ -157,6 +157,9 @@ class _LopHocGVScreenState extends State<LopHocGVScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Lớp học của tôi"),
+        backgroundColor: Colors.blue,
+        iconTheme: const IconThemeData(color: Colors.white),
+        foregroundColor: Colors.white,
         leading: Builder(
           builder: (context) {
             return IconButton(
@@ -180,7 +183,6 @@ class _LopHocGVScreenState extends State<LopHocGVScreen> {
                     openChiTietClass(c);
                   },
                   child: Container(
-                    // Giữ nguyên Container của bạn
                     margin: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 8,
@@ -285,7 +287,8 @@ class _LopHocGVScreenState extends State<LopHocGVScreen> {
         onPressed: () {
           goToAddClass();
         },
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white,),
+        backgroundColor: Colors.blue,
       ),
     );
   }

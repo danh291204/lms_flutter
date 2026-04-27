@@ -269,7 +269,8 @@ class _QlDiemGVScreenState extends State<QlDiemGVScreen> {
                                   horizontal: 12, vertical: 6),
                               child: ListTile(
                                 leading: CircleAvatar(
-                                  child: Text("${index + 1}"),
+                                  child: Text("${index + 1}",style: TextStyle(color: Colors.white),),
+                                  backgroundColor: Colors.blue,
                                 ),
                                 title: Text(
                                   item['hoTen'] ?? "",

@@ -132,7 +132,6 @@ class _LamBaiKTScreenState extends State<Lambaiktscreen> {
 
   Widget buildQuestion(Map q) {
     String id = q['idCauHoi'].toString();
-
     return Card(
       margin: const EdgeInsets.all(12),
       child: Padding(
@@ -142,7 +141,6 @@ class _LamBaiKTScreenState extends State<Lambaiktscreen> {
           children: [
             Text("Câu hỏi: ${q['question']}"),
             const SizedBox(height: 10),
-
             ...['A', 'B', 'C', 'D'].map((key) {
               return RadioListTile(
                 title: Text(q[key]),
@@ -166,6 +164,9 @@ class _LamBaiKTScreenState extends State<Lambaiktscreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(quiz?['tenQuiz'] ?? "Đang tải..."),
+        backgroundColor: Colors.blue,
+        iconTheme: const IconThemeData(color: Colors.white),
+        foregroundColor: Colors.white,
         actions: [
           Padding(
             padding: const EdgeInsets.all(12),
@@ -191,12 +192,16 @@ class _LamBaiKTScreenState extends State<Lambaiktscreen> {
                         questions.map((q) => buildQuestion(q)).toList(),
                   ),
                 ),
-
                 Padding(
                   padding: const EdgeInsets.all(12),
                   child: ElevatedButton(
                     onPressed: submitQuiz,
                     child: const Text("Nộp bài"),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                    ),
                   ),
                 )
               ],

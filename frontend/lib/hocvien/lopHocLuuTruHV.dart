@@ -68,6 +68,9 @@ class _LopHocLuuTruHVScreenState extends State<LopHocLuuTruHVScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Lớp học đã lưu trữ"),
+        backgroundColor: Colors.blue,
+        iconTheme: const IconThemeData(color: Colors.white),
+        foregroundColor: Colors.white,
         leading: Builder(
           builder: (context) {
             return IconButton(

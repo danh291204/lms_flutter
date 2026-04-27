@@ -211,12 +211,18 @@ class _ChuaHTHocVienScreenState extends State<ChuaHTHocVienScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text("Chưa hoàn thành"),
+        backgroundColor: Colors.blue,
+        iconTheme: const IconThemeData(color: Colors.white),
+        foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: "Bài học"),
+            Tab(text: "Bài học",),
             Tab(text: "Bài kiểm tra"),
           ],
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
         ),
       ),
       drawer: Hocvienmenubar(hoTen: hoTen, vaiTro: vaiTro),
@@ -236,7 +242,7 @@ class _ChuaHTHocVienScreenState extends State<ChuaHTHocVienScreen>
                       ),
 
                 quizChuaLam.isEmpty
-                    ? _buildEmpty("Không còn quiz")
+                    ? _buildEmpty("Không còn bài kiểm tra nào để làm")
                     : ListView.builder(
                         padding: const EdgeInsets.all(12),
                         itemCount: quizChuaLam.length,

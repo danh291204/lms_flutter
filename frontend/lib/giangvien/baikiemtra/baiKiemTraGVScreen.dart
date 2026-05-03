@@ -259,6 +259,19 @@ class _BaikiemtragvscreenState extends State<Baikiemtragvscreen> {
                                           " ${quiz["quiz_questions"]?.length ?? 0} câu",
                                           style: const TextStyle(fontSize: 13),
                                         ),
+                                       Row(
+                                          children: const [
+                                            Text(
+                                              " Nhấn để chỉnh sửa thông tin",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.blue,
+                                              ),
+                                            ),
+                                            SizedBox(width: 4),
+                                            Icon(Icons.arrow_forward_ios, size: 12, color: Colors.blue),
+                                          ],
+                                        ),
                                       ],
                                     ),
                                   ),

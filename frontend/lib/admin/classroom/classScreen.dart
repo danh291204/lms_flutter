@@ -298,6 +298,7 @@ class _ClassScreenState extends State<ClassScreen> {
                                 ),
 
                                 Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     IconButton(
                                       icon: const Icon(
@@ -316,6 +317,51 @@ class _ClassScreenState extends State<ClassScreen> {
                                       onPressed: () {
                                         confirmDelete(lop['idKhoaHoc']);
                                       },
+                                    ),
+
+                                    const SizedBox(height: 8),
+
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => Chitietclassscreen(
+                                              idKhoaHoc: lop['idKhoaHoc'],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: const Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.arrow_forward,
+                                              color: Colors.white,
+                                              size: 14,
+                                            ),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              "Chi tiết",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
